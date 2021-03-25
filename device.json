@@ -1,0 +1,12 @@
+[
+    {
+      "id_property": "P0",
+      "type_property": "0",
+      "name_property": "led",
+      "value": "0",
+      "value_min": "0",
+      "value_max": "1",
+      "pin_output": "2",
+      "pin_input": "34"
+    }
+]

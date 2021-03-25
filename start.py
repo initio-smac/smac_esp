@@ -7,7 +7,8 @@ try:
     import wifi_client2
     from smac_devices import Fan, Switch
     ESP = True
-except:
+except Exception as e:
+    print(e)
     import asyncio
     ESP = False
 
@@ -91,7 +92,7 @@ class smacInit():
 
     def add_topic(self, frm, id_topic, name_home, name_topic, id_device, passkey, *args):
         if str(passkey) == str(config.PIN_DEVICE):
-            config.update_config_variable(key='SUB_TOPIC', value=id_topic, arr_op="ADD")
+            config.update_config_variable(key='SUB_TOPIC', value=[id_topic, name_home, name_topic], arr_op="ADD")
             client.subscribe(id_topic)
             d = {}
             d[ smac_keys["ID_TOPIC"] ] = id_topic
@@ -218,6 +219,13 @@ class smacInit():
                     id_device = data.get(smac_keys["ID_DEVICE"])
                     passkey = data.get(smac_keys["PASSKEY"])
                     self.delete_topic(frm, id_topic, id_device, passkey, msg_id)
+
+                if cmd == smac_keys["CMD_UPDATE_WIFI_CONFIG"]:
+                    ssid = data.get(smac_keys["SSID"])
+                    password = data.get(smac_keys["PASSWORD"])
+                    config.update_config_variable(key="wifi_config_2", value={"ssid": ssid, "password": password})
+
+
 
 
 

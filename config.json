@@ -1,0 +1,20 @@
+{
+    "version": "02",
+    "mode": 1,
+    "wifi_config_1": {
+        "ssid": "initioenergy_act1",
+        "password": "Smacsystem@6"
+    },
+    "wifi_config_2": {
+        "ssid": "initioenergy_act",
+        "password": "Smacsystem@6"
+    },
+    "ap_config": {
+        "ssid": "smac_",
+        "password": "password"
+    },
+    "id_device": "D1",
+    "name_device": "smac_D1",
+    "pin_device": "1234",
+    "sub_topic": [ ["#", "", ""], ["D1", "", ""], ["T1", "Home1", "Topic1"], ["T2", "Home2", "Topic2"]]
+}

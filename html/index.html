@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Config ESP32</h1>
+<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> -->
+<script src="static/jquery.min.js"></script>
+<div>
+    <div id="id_loader" style="display: none;"> Loading... </div>
+    <div id="id_info"> </div>
+    <div>
+        <span id="id_conn1"> Connection: 1 </span> <br>
+        <input type="text" placeholder="wifi_ssid" id="id_wifi_ssid_1"> <br>
+        <input type="text" placeholder="wifi_password" id="id_wifi_password_1"> <br>
+        <input type="button" value="update"  id="id_wifi_submit_1">
+    <div> <br>
+
+    <div>
+        <span id="id_conn2"> Connection: 2 </span> <br>
+        <input type="text" placeholder="wifi_ssid" id="id_wifi_ssid_2"> <br>
+        <input type="text" placeholder="wifi_password" id="id_wifi_password_2"> <br>
+        <input type="button" value="update"  id="id_wifi_submit_2">
+    <div> <br>
+
+    <div>
+        <span id="id_pin_device_wrapper"> PIN Device </span> <br>
+        <input type="text" placeholder="PIN" id="id_text_pin_device"> <br>
+        <input type="button" value="update"  id="id_update_pin_device">
+    <div> <br>
+
+    <div>
+        <span id="id_name_device_wrapper"> Name Device </span> <br>
+        <input type="text" placeholder="PIN" id="id_text_name_device"> <br>
+        <input type="button" value="update"  id="id_update_name_device">
+    <div> <br>
+
+    <div class="C_topic_wrapper"  style="">
+        <span > Subscribed Homes </span> <br>
+        <div id="id_topics" >
+        </div>
+        <input type="button" value="remove selected home"  id="id_remove_topic">
+    </div> <br>
+
+
+    <div class="C_version_wrapper"  style="">
+        <span > Updates and Downloads </span> <br>
+        <input type="button" value="check for updates"  id="id_check_for_update"> <br>
+        <!-- <input type="button" value="download and install"  id="id_download_update" style="display:none;"> -->
+        <input type="button" value="download and install"  id="id_download_update" style="display: none;">
+    </div><br>
+
+    <div>
+        <input type="button" value="save and restart"  id="id_restart">
+    <div> <br>
+
+
+    <!--<div>
+        Connection: Default <br>
+        <input type="text" placeholder="wifi_ssid" id="id_wifi_ssid_3" disabled> <br>
+        <input type="text" placeholder="wifi_password" id="id_wifi_password_3" disabled> <br>
+        <input type="button" value="update"  id="id_wifi_submit">
+    <div> <br>
+
+     <div>
+        <input type="text" placeholder="0.0.0.0" id="id_mqtt_addr">
+        <input type="button" value="update"  id="id_mqtt_addr_submit">
+    <div> <br> -->
+
+    <!-- <div id="id_update">
+        <input type="button" value="check for update"  id="id_check_for_update">
+        <div class="C_update_block" style="display: none;">
+             <input type="button" value="download update"  id="id_download_update">
+        </div>
+    <div> <br>
+
+    <div>
+        Enter Group ID
+        <input type="text" placeholder="Enter Group ID" id="id_group_id">
+        <input type="button" value="send"  id="id_addgroup_submit">
+    <div> <br> -->
+
+
+
+
+
+</div>
+
+<script>
+var DATA = {}
+$(document).ready(function(){
+   function rest_call(url, method="GET", data={}, refresh_on_success=true) {
+	if(method == "POST"){
+            data = JSON.stringify( data );
+        }
+
+        $.ajax({
+            url: url,
+            type: method,
+            data: data,
+            contentType: 'application/json; charset=utf-8',
+            success: function(result) {
+                //console.log(result)
+                if( refresh_on_success ) {
+                    location.reload();
+                } else if(url == "/check_for_update") {
+                    $("#id_download_update").show()
+                    $("#id_info").html("New Update is available.")
+                } else {
+                    console.log(result);
+                    $("#id_info").html(result)
+                }
+
+            },
+            error: function(xhr, status, error) {
+                 console.log(status);
+                 $("#id_info").html(status)
+
+            },
+            beforeSend: function() {
+                 $("#id_loader").show()
+            },
+            complete: function(){
+                 $("#id_loader").hide()
+            },
+        });
+
+
+   }
+
+   $.getJSON('/load_config', function(jd) {
+          console.log()
+          console.log(jd);
+          DATA = jd
+          var connected_ssid = jd["connected_ssid"]
+          var strength = jd["connected_ssid_strength"]
+          if( connected_ssid == jd.wifi_config_1["ssid"]) {
+            $("#id_conn1").css("color", "green");
+            $("#id_conn1").append(" ("+ strength + "%) ");
+          }
+          $('#id_wifi_ssid_1').val(jd.wifi_config_1["ssid"] );
+          $('#id_wifi_password_1').val(jd.wifi_config_1["password"]);
+          if( connected_ssid == jd.wifi_config_2["ssid"]) {
+            $("#id_conn2").css("color", "green");
+            $("#id_conn2").append(" ("+ strength + "%) ");
+          }
+          $('#id_wifi_ssid_2').val(jd.wifi_config_2["ssid"] );
+          $('#id_wifi_password_2').val(jd.wifi_config_2["password"]);
+          $('#id_text_name_device').val(jd.name_device);
+          $('#id_text_pin_device').val(jd.pin_device);
+
+          var topics = jd.sub_topic;
+          if(topics.length > 0) {
+              var text = "";
+              $(".C_topic_wrapper").show()
+              for (i = 0; i < topics.length; i++) {
+                   id_topic = topics[i][0]
+                   if( (id_topic != "") && (id_topic != jd.id_device) && (id_topic != "#") && (id_topic != null) ) {
+                        text += "<input type='checkbox' name='sel_topic' value='"+ id_topic +"'>" + topics[i][1] + "/" + topics[i][2] + "<br>";
+                   }
+	          }
+              $("#id_topics").append(text)
+          } else {
+            $("#id_topics").html("No homes")
+            $("#id_remove_topic").hide()
+          }
+
+          //$('#id_mqtt_addr').val(jd.mqtt_server);
+          //var versions = jd.versions
+          //if(versions.length > 0) {
+          //    var text = "";
+          //    $(".C_version_wrapper").show()
+          //    for (i = 0; i < versions.length; i++) {
+  		  // text += "<input type='radio' name='sel_version' value='"+ versions[i] +"'>" + versions[i] + "<br>";
+	      //}
+          //    $("#id_versions").append(text)
+          //}
+         
+   });
+
+  $("#id_addgroup_submit").click(function(){
+      var group_id = $("#id_group_id").val()
+      console.log(group_id);
+      var data = {}
+      data["group_id"] = group_id
+      rest_call(url="/send_group_request", method="GET", data=data)
+  });
+
+  $("#id_wifi_submit_1").click(function(){
+      var ssid = $("#id_wifi_ssid_1").val()
+      var password = $("#id_wifi_password_1").val()
+      var data = {}
+      data["ssid"] = ssid
+      data["password"] = password
+      data["connection"] = 1
+      rest_call(url="/update_wifi", method="GET", data=data)
+  });
+  
+  $("#id_wifi_submit_2").click(function(){
+      var ssid = $("#id_wifi_ssid_2").val()
+      var password = $("#id_wifi_password_2").val()
+      var data = {}
+      data["ssid"] = ssid
+      data["password"] = password
+      data["connection"] = 2
+      rest_call(url="/update_wifi", method="GET", data=data)
+  });
+
+  $("#id_mqtt_addr_submit").click(function(){
+      var mqtt_server = $("#id_mqtt_addr").val()
+      console.log(mqtt_server);
+      var data = {}
+      data["mqtt_server"] = mqtt_server
+      rest_call(url="/update_mqtt_server", method="GET", data=data)
+  });
+
+  $("#id_update_name_device").click(function(){
+      var data = {}
+      data["name_device"] = $("#id_text_name_device").val()
+      console.log(data)
+      rest_call(url="/update_name_device", method="GET", data=data)
+  });
+
+  $("#id_update_pin_device").click(function(){
+      var data = {}
+      data["pin_device"] = $("#id_text_pin_device").val()
+      console.log(data)
+      rest_call(url="/update_pin_device", method="GET", data=data)
+  });
+
+  $("#id_download_version").click(function(){
+      var ver = $("input[name=sel_version]:checked").val();
+      console.log(ver);
+      var data = {}
+      data["version"] = ver
+      rest_call(url="/download_version", method="GET", data=data)
+  });
+
+  $("#id_restart").click(function(){
+      console.log("restarting...");
+      rest_call(url="/restart", method="GET", data={})
+  });
+
+  $("#id_remove_topic").click(function(){
+      var topics = [];
+      $("input[name=sel_topic]:checked").each(function() {
+            topics.push(this.value);
+      });
+      //console.log(topics)
+      if(topics.length == 0) {
+            $("#id_info").html("Select a Home to Remove")
+      } else{
+        //console.log(topics);
+        //console.log(topics.values());
+        var data = {}
+        data["sub_topic"] = JSON.stringify(topics) //stringify for converting js-array to python-list
+        console.log(data)
+        rest_call(url="/remove_topic", method="GET", data=data)
+      }
+  });
+  
+  $("#id_check_for_update").click(function(){
+      //console.log("checking for updates");
+      $("#id_info").html("Checking For Updates.")
+      var data = {}
+      data["version"] = DATA.version
+      rest_call(url="/check_for_update", method="GET", data=data, refresh_on_success=false)
+  });
+
+  $("#id_download_update").click(function(){
+      //console.log("Downlo");
+      $("#id_info").html("Downloading Updates.")
+      var data = {}
+      data["version"] = DATA.version
+      rest_call(url="/download_update", method="GET", data=data, refresh_on_success=false)
+  });
+
+
+});
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,50 @@
+[
+    {
+      "property": "switch_power",
+      "instance": 0,
+      "value": "0",
+      "min": 0,
+      "max": 1,
+      "pin": "2",
+      "input_pin": "34",
+      "disabled": 0,
+      "permission": "rw",
+      "mode": "out"
+    },
+    {
+      "property": "switch_power",
+      "instance": 1,
+      "value": "0",
+      "min": 0,
+      "max": 1,
+      "pin": "17",
+      "input_pin": "35",
+      "disabled": 0,
+      "permission": "rw",
+      "mode": "out"
+    },
+    {
+      "property": "switch_power",
+      "instance": 2,
+      "value": "0",
+      "min": 0,
+      "max": 1,
+      "pin": "18",
+      "input_pin": "32",
+      "disabled": 0,
+      "permission": "rw",
+      "mode": "out"
+    },
+    {
+      "property": "switch_power",
+      "instance": 3,
+      "value": "0",
+      "min": 0,
+      "max": 1,
+      "pin": "19",
+      "input_pin": "33",
+      "disabled": 0,
+      "permission": "rw",
+      "mode": "out"
+    }
+]
