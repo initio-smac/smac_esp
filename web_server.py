@@ -171,8 +171,12 @@ def http_get(url, https=True):
 @app.route("/restart")
 def restart(req, resp):
     print("restarting")
-    config.update_config_variable(key="mode", value=0 )
-    import machine
+    if req.method == "POST":
+        yield from req.read_form_data()
+    else:  # GET, apparently
+        req.parse_qs()
+    mode = req.form["mode"]
+    config.update_config_variable(key="mode", value=mode )
     machine.reset()
 
 @app.route("/download_update")
@@ -187,6 +191,7 @@ def download_update(req, resp):
     config.delete_config_variable(key="download_version")
     yield from picoweb.start_response(resp)
     yield from resp.awrite("Updates installed. Restarting")
+    config.update_config_variable(key="mode", value=0)
     machine.reset()
 
 @app.route("/check_for_update")

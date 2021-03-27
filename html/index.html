@@ -24,19 +24,19 @@
           padding: 12px 20px;
           margin: 8px 0;
           box-sizing: border-box;
-          font-size: 1.2vw;
+          font-size: 15px;
         }
 
          input[type=button] {
           padding: 12px 20px;
           margin: 8px 0;
           box-sizing: border-box;
-          font-size: 1vw;
+          font-size: 15px;
         }
 
         .C_header {
-            height: 5vw;
-            font-size: 2vw;
+            height: 50px;
+            font-size: 20px;
             text-align: center;
         }
 
@@ -46,8 +46,9 @@
 
         .C_title {
             width: 100%;
-            padding: .5vw;
+            padding: 12px;
             background-color: #b0b0b0;
+            font-size: 15px;
         }
 
         #id_loader {
@@ -142,6 +143,7 @@
     </div><br>
 
     <div class="C_block">
+        <input type="checkbox" id="id_set_mode"> Restart in Same Mode
         <input type="button" value="save and restart"  id="id_restart">
     <div> <br>
 
@@ -329,7 +331,9 @@ $(document).ready(function(){
 
   $("#id_restart").click(function(){
       console.log("restarting...");
-      rest_call(url="/restart", method="GET", data={})
+      data = {}
+      data["mode"] = $("#id_set_mode:checked").val();
+      rest_call(url="/restart", method="GET", data=data)
   });
 
   $("#id_remove_topic").click(function(){

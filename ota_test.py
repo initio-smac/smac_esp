@@ -17,7 +17,8 @@ URL_FILE = "https://raw.githubusercontent.com/repos/initio-smac/smac_esp/0.1/wif
 
 class OTAUpdate():
     repo_owner = "initio-smac"
-    repo_name = "smac_esp"
+    #repo_name = "smac_esp"
+    repo_name = "STD_3R_1F_ESP32"
     tag_name = ""
     version_name = ""
     path = ""

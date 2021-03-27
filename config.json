@@ -16,5 +16,6 @@
     "id_device": "D1",
     "name_device": "smac_D1",
     "pin_device": "1234",
-    "sub_topic": [ ["#", "", ""], ["D1", "", ""], ["T1", "Home1", "Topic1"], ["T2", "Home2", "Topic2"]]
+    "sub_topic": [ ["#", "", ""], ["D1", "", ""], ["T1", "Home1", "Topic1"], ["T2", "Home2", "Topic2"]],
+    "interval_online": 30
 }

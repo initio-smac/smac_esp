@@ -15,6 +15,7 @@ class Config():
     VERSION = "02"
     MODE = 0
     DOWNLOAD_VERSION = None
+    INTERVAL_ONLINE = 30
 
     def load_config_variable(self):
         try:
@@ -31,6 +32,7 @@ class Config():
                 self.PIN_DEVICE = config.get("pin_device", "1234")
                 self.MODE = config.get("mode", 0)
                 self.DOWNLOAD_VERSION = config.get("download_version")
+                self.INTERVAL_ONLINE = config.get("interval_online")
 
                 #global MODE
                 #print(config.get("mode"))
@@ -50,7 +52,7 @@ class Config():
             print("get config file err:{}".format(e) )
 
     # arr_op = [ ADD, REM]
-    def update_config_variable(self, key, value, arr_op="ADD"):
+    def update_config_variable(self, key, value, arr_op="ADD", reload_variables=False):
         try:
             config = {}
             with open('config.json', "r") as c1:
@@ -72,6 +74,8 @@ class Config():
                 #print(d)
                 c2.write(json.dumps(d))
                 c2.close()
+            if reload_variables:
+                self.load_config_variable()
         except Exception as e:
             print("update config file err: {}".format(e))
 
@@ -89,5 +93,22 @@ class Config():
                 c2.close()
         except Exception as e:
             print("delete config file err: {}".format(e))
+
+    def update_name_property(self, id_property, name_property):
+        try:
+            props = {}
+            with open('device.json', "r") as c1:
+                props = json.load(c1)
+                c1.close()
+
+            with open('device.json', "w") as c2:
+                d = props.copy()
+                for num, prop in enumerate(d):
+                    if prop["id_property"] == id_property:
+                        d[num]["name_property"] = name_property
+                c2.write(json.dumps(d))
+                c2.close()
+        except Exception as e:
+            print("update config file err: {}".format(e))
 
 config = Config()
