@@ -175,7 +175,7 @@ def restart(req, resp):
         yield from req.read_form_data()
     else:  # GET, apparently
         req.parse_qs()
-    mode = req.form["mode"]
+    mode = req.form.get("mode", 0)
     config.update_config_variable(key="mode", value=mode )
     machine.reset()
 
@@ -211,4 +211,11 @@ def check_for_update(req, resp):
 
 #import _thread
 #_thread.start_new_thread(mqttTest.connect, ())
+download_software = config.get_config_variable(key="download_software")
+print("download-software", download_software)
+if download_software == 1:
+    config.delete_config_variable(key="download_software")
+    ota.check_and_install_udpates()
+
+
 app.run(debug=True, host=ADDR)

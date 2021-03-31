@@ -1,3 +1,4 @@
+from config import config
 
 try:
     import urequests as requests
@@ -28,6 +29,15 @@ class OTAUpdate():
             self.repo_owner=repo_owner
         if repo_name != "":
             self.repo_name = repo_name
+
+    def check_and_install_udpates(self, *args):
+        if self.check_for_latest_version():
+            print("Downloading version: {}, {}".format(self.version_name, self.tag_name))
+            self.download_all_files(version=self.tag_name)
+            config.update_config_variable(key="download_software_status", value="1")
+        else:
+            print("No updates available")
+            config.update_config_variable(key="download_software_status", value="0")
 
     def check_for_latest_version(self):
         URL = "https://api.github.com/repos/{}/{}/releases/latest".format(self.repo_owner, self.repo_name)

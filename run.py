@@ -4,6 +4,7 @@ config.load_config_variable()
 #time.sleep(1)
 
 MODE = config.MODE
+print("MODE", MODE)
 #MODE = 1
 if MODE == 1:
     import web_server
