@@ -6,10 +6,12 @@ from wifi_ap import wlan
 import json
 import gc
 import machine
-import wifi_client
+
+import uasyncio as asyncio
 import time
 from ota_test import ota
 
+import wifi_client
 ifconfig = wifi_client.wlan.ifconfig()
 ADDR = ifconfig[0]
 
@@ -209,13 +211,24 @@ def check_for_update(req, resp):
         yield from resp.awrite("Device is already upto date.")
         
 
-#import _thread
-#_thread.start_new_thread(mqttTest.connect, ())
-download_software = config.get_config_variable(key="download_software")
-print("download-software", download_software)
-if download_software == 1:
-    config.delete_config_variable(key="download_software")
-    ota.check_and_install_udpates()
+async def check_and_download():
+    #import _thread
+    #_thread.start_new_thread(mqttTest.connect, ())
+    await asyncio.sleep(0)
+    download_software = config.get_config_variable(key="download_software")
+    print("download-software", download_software)
+    if download_software == 1:
+        config.delete_config_variable(key="download_software")
+        ota.check_and_install_udpates()
 
+async def start_server():
+    await asyncio.sleep(0)
+    app.run(debug=True, host=ADDR)
 
-app.run(debug=True, host=ADDR)
+async def start():
+    t1 = asyncio.create_task(check_and_download())
+    t2 = asyncio.create_task(start_server())
+    await t2
+    await t1
+
+asyncio.run(start())

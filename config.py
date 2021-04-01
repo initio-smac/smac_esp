@@ -36,7 +36,7 @@ class Config():
                 self.PIN_DEVICE = config.get("pin_device", "1234")
                 self.MODE = config.get("mode", 0)
                 self.DOWNLOAD_VERSION = config.get("download_version")
-                self.INTERVAL_ONLINE = config.get("interval_online")
+                self.INTERVAL_ONLINE = config.get("interval_online", 60)
                 self.LIMIT["LIMIT_DEVICE"] = config.get("limit_device", 10)
                 self.LIMIT["LIMIT_TOPIC"] = config.get("limit_topic", 10)
 

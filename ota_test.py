@@ -3,10 +3,12 @@ from config import config
 try:
     import urequests as requests
     import uos as os
+    import machine
 except:
     import requests
 
 import gc
+import time
 
 URL_RELEASES = "https://api.github.com/repos/initio-smac/smac_esp/releases"
 URL_LATEST_RELEASE = "https://api.github.com/repos/initio-smac/smac_esp/releases/latest"
@@ -31,10 +33,19 @@ class OTAUpdate():
             self.repo_name = repo_name
 
     def check_and_install_udpates(self, *args):
-        if self.check_for_latest_version():
+        #time.sleep(5)
+        while not self.test_connection():
+            print("No connection")
+            time.sleep(1)
+        cur_version = config.get_config_variable(key="version")
+        if self.check_for_latest_version() and (self.tag_name != cur_version):
             print("Downloading version: {}, {}".format(self.version_name, self.tag_name))
             self.download_all_files(version=self.tag_name)
             config.update_config_variable(key="download_software_status", value="1")
+            config.update_config_variable(key="mode", value=0)
+            config.update_config_variable(key="version", value=self.tag_name)
+            time.sleep(2)
+            machine.reset()
         else:
             print("No updates available")
             config.update_config_variable(key="download_software_status", value="0")
@@ -84,7 +95,7 @@ class OTAUpdate():
             #return False
 
 
-    def download_all_files(self, version, path=''):
+    def download_all_files_old(self, version, path=''):
         try:
             gc.collect()
             if(path != '') and (path != None):
@@ -95,6 +106,7 @@ class OTAUpdate():
             #    URL = "https://api.github.com/repos/{}/{}/contents?ref={}".format(self.repo_owner, self.repo_name, version)
             print(URL)
             req = requests.get(URL, headers= {'user-agent': 'micropython'})
+            print(req.text)
             for f in req.json():
                 if f["type"] == "file":
                     print("downloading file: {}/{}".format(path, f["name"]))
@@ -104,13 +116,14 @@ class OTAUpdate():
                 elif f["type"] == "dir":
                     #URL = "https://api.github.com/repos/{}/{}/contents?ref={}".format(self.repo_owner, self.repo_name, version)
                     new_path = (path + "/" + f["name"]) if(path != "") else (path + f["name"])
+                    req.close()
                     self.download_all_files(version, new_path)
-            req.close()
+
             gc.collect()
         except Exception as e:
             print("except while getting all files: {}".format(e))
 
-    def download_file(self, filename, version, url=None,  pathToSave=''):
+    def download_file_old(self, filename, version, url=None,  pathToSave=''):
         try:
             URL = "https://raw.githubusercontent.com/{}/{}/{}{}".format(self.repo_owner, self.repo_name, version+"/"+pathToSave, filename)
             print(URL)
@@ -123,15 +136,61 @@ class OTAUpdate():
         except Exception as e:
             print("Exception while downloading file: {}. e:{}".format(filename, e))
 
+    def download_all_files(self, version, path=''):
+        try:
+            gc.collect()
+            URL = "https://api.github.com/repos/{}/{}/git/trees/{}?recursive=1".format(self.repo_owner, self.repo_name,  version)
+            print(URL)
+            req = requests.get(URL, headers= {'user-agent': 'micropython'})
+            #print(req.text)
+            for f in req.json().get("tree", []):
+                path = f["path"]
+                print("downloading file: {}".format(path))
+                self.download_file(filename=path, version=version)
+
+            gc.collect()
+        except Exception as e:
+            print("except while getting all files: {}".format(e))
+
+    def download_file(self, filename, version, url=None):
+        try:
+            URL = "https://raw.githubusercontent.com/{}/{}/{}/{}".format(self.repo_owner, self.repo_name, version, filename)
+            print(URL)
+            paths = filename.split(".")
+            print(paths)
+            if (len(paths) < 2):
+                self.create_dir(path=filename)
+            else:
+                res = requests.get(URL)
+                print("saving file to {}".format(filename))
+                with open("{}".format(filename), "w") as f:
+                    f.write(res.text)
+                res.close()
+            gc.collect()
+        except Exception as e:
+            gc.collect()
+            print("Exception while downloading file: {}. e:{}".format(filename, e))
+
+    def test_connection(self, *args):
+        url = "https://smacsystem.com/download/esp32/version.json"
+        req = requests.get(url)
+        req.close()
+        if req.status_code == 200:
+            return True
+        else:
+            return False
+
     def test(self):
-        req = requests.get(URL_RELEASE_FILES)
+        url = "https://api.github.com/repos/initio-smac/STD_3R_1F_ESP32/git/trees/V01?recursive=1"
+        req = requests.get(url)
         try:
             res = req.json()
             #print(res)
-            for i in res:
-                print(i["name"])
-                print(i["download_url"])
-                print(i["type"])
+            for i in res.get("tree", []):
+                print(i["path"])
+                #print(i["name"])
+                #print(i["download_url"])
+                #print(i["type"])
             if res.get("name", None) != None:
                 version_name = res.get("name")
                 print("Update avaiable: version={}".format(version_name))
@@ -142,4 +201,6 @@ class OTAUpdate():
             print("No update abailable")
 
 ota = OTAUpdate()
-#ota.download_all_files(version="02")
+#ota.test()
+#ota.tag_name = "V01"
+#ota.download_all_files(version="V01")
