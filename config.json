@@ -3,8 +3,8 @@
     "mode": 0,
     "download_software": 0,
     "wifi_config_1": {
-        "ssid": "initioenergy_act1",
-        "password": "Smacsystem@6"
+        "ssid": "Realme",
+        "password": "password"
     },
     "wifi_config_2": {
         "ssid": "initioenergy_act",
@@ -20,5 +20,7 @@
     "sub_topic": [ ["#", "", ""], ["D1", "", ""], ["T1", "Home1", "Topic1"], ["T2", "Home2", "Topic2"]],
     "interval_online": 60,
     "limit_device": 10,
-    "limit_topic": 10
+    "limit_topic": 10,
+    "limit_action": 5,
+    "limit_trigger": 5
 }

@@ -1,11 +1,13 @@
 import json
 import time
 
+from smac_context import add_trigger, add_action, remove_action, remove_trigger
+
 try:
     import machine
     from machine import Timer
     import uasyncio as asyncio
-    import wifi_client2
+    import wifi_client
     from smac_devices import Fan, Switch
     ESP = True
 except Exception as e:
@@ -27,6 +29,7 @@ from smac_device_keys import SMAC_DEVICES, SMAC_PROPERTY
 
 class smacInit():
     SENDING_INFO = 0
+    TIME_SYNC = False
 
 
     def send_test(self, *args):
@@ -61,10 +64,11 @@ class smacInit():
         topics.append( ['', '', ''] )
         #print(topics)
         #print(dest_topic)
-        client.send_message(frm=config.ID_DEVICE, to=dest_topic, cmd= smac_keys["CMD_INIT_SEND_INFO"], message={}, udp=True, tcp=False)
+        #client.send_message(frm=config.ID_DEVICE, to=dest_topic, cmd= smac_keys["CMD_INIT_SEND_INFO"], message={}, udp=True, tcp=False)
         for t in topics:
             if t[0] not in ("#", config.ID_DEVICE):
                 m = {}
+                m[ smac_keys["TOPIC"] ] = 1
                 m[ smac_keys["ID_TOPIC"] ] = t[0]
                 m[ smac_keys["NAME_HOME"]] = t[1]
                 m[ smac_keys["NAME_TOPIC"]] = t[2]
@@ -79,6 +83,7 @@ class smacInit():
         for p in self.PROPERTY:
             print(p)
             p1 = {}
+            p1[ smac_keys["PROPERTY"] ] = 1
             p1[ smac_keys["ID_DEVICE"] ] = config.ID_DEVICE
             p1[ smac_keys["ID_PROPERTY"] ] = p["id_property"]
             p1[ smac_keys["TYPE_PROPERTY"] ] = p["type_property"]
@@ -90,8 +95,8 @@ class smacInit():
         print("send property")
 
         self.SENDING_INFO = 0
-        client.send_message(frm=config.ID_DEVICE, to=dest_topic, cmd=smac_keys["CMD_END_SEND_INFO"], message={},
-                            udp=True, tcp=False)
+        #client.send_message(frm=config.ID_DEVICE, to=dest_topic, cmd=smac_keys["CMD_END_SEND_INFO"], message={},
+        #                    udp=True, tcp=False)
 
     def add_topic(self, frm, id_topic, name_home, name_topic, id_device, passkey, *args):
         print("len SUB_TOPIC", len(config.SUB_TOPIC))
@@ -324,9 +329,37 @@ class smacInit():
                             client.send_message(frm=config.ID_DEVICE, to=frm, cmd=smac_keys["CMD_INVALID_PIN"],
                                                     message=d1, udp=True, tcp=False)
 
+                if cmd == smac_keys["CMD_ADD_ACTION"]:
+                    add_action(data, frm)
+
+                if cmd == smac_keys["CMD_ADD_TRIGGER"]:
+                    add_trigger(data, frm)
+
+                if cmd == smac_keys["CMD_REMOVE_ACTION"]:
+                    remove_action(data, frm)
+
+                if cmd == smac_keys["CMD_REMOVE_TRIGGER"]:
+                    remove_trigger(data, frm)
+
+                if cmd == smac_keys["CMD_TRIGGER_CONTEXT"]:
+                    id_context = data.get( smac_keys["ID_CONTEXT"] )
+                    self.trigger_context(id_context)
+
         except Exception as e:
             print("Exception while decoding message: {}".format(e) )
         #    raise e
+
+    def trigger_context(self, id_context):
+        print("Triggering Context ", id_context)
+        actions = config.get_action_all()
+        for act in actions.keys():
+            a = act.split(":")
+            id_context_act = a[1]
+            if id_context == id_context_act:
+                id_prop = a[3]
+                type_prop = config.PROP_TYPE[id_prop]
+                value = actions[act]
+                self.set_property(id_prop, type_prop, value)
 
 
     async def interval(self):
@@ -377,13 +410,39 @@ class smacInit():
             if(COUNTER % (2*config.INTERVAL_ONLINE)) == 0:
                 client.send_message(frm=config.ID_DEVICE, to="#", cmd=smac_keys["CMD_ONLINE"], message={}, udp=True,
                                     tcp=False)
+
+            if(COUNTER % 600) == 0:
+                print("checking triggers on time:", time.localtime())
+                triggers = config.get_trigger_all()
+                for trig in triggers.keys():
+                    print(trig)
+                    value = triggers[trig]
+                    id_topic, id_context, id_device, id_property, type_trigger = trig.split(":")
+                    print( smac_keys[type_trigger] )
+                    if type_trigger == smac_keys["TYPE_TRIGGER_TIME"]:
+                        tim = value.split(":")
+                        hour = tim[0]
+                        minute = tim[1]
+                        cur_time = time.localtime()
+                        cur_hour = cur_time[3]
+                        cur_min = cur_time[4]
+                        print("hour, min, local_hour, local_min", hour, minute, cur_hour, cur_min)
+                        if self.TIME_SYNC and (hour == str(cur_hour) ) and (minute == str(cur_min)):
+                            self.trigger_context(id_context)
+
+                    elif type_trigger == smac_keys["TYPE_TRIGGER_PROP"]:
+                        print("val, local_val", value, config.PROP_INSTANCE[id_property].value())
+                        if str(config.PROP_INSTANCE[id_property].value()) == str(value):
+                            self.trigger_context(id_context)
+
+
             COUNTER += 1
             await asyncio.sleep(.1)
 
     def set_property(self, id_prop, type_prop, value):
-        print("TYPE_PROP", type_prop)
-        print(type_prop == SMAC_PROPERTY["FAN"])
-        try:
+            print("TYPE_PROP", type_prop)
+            print(type_prop == SMAC_PROPERTY["FAN"])
+        #try:
             if type_prop == SMAC_PROPERTY["SWITCH"]:
                 #config.update_config_variable(key=id_prop, value=value)
                 if value:
@@ -407,9 +466,23 @@ class smacInit():
                 client.send_message(frm=config.ID_DEVICE, to="#", message=d, cmd=smac_keys["CMD_STATUS_SET_PROPERTY"],
                                     udp=True, tcp=False)
                 return True
-        except Exception as e:
-            print("Exception during set_property: {}".format(e) )
+        #except Exception as e:
+        #    print("Exception during set_property: {}".format(e) )
 
+    def on_start(self, *args):
+        print("started", args)
+
+    def setlocaltime(self):
+        from ntptime import time as tim
+        t = tim()
+        #import machine
+        #import time
+
+        offset = int(5.5*3600)
+        #t_offset = t+offset
+        tm = time.localtime(t + offset)
+        print("t, tm", t, tm)
+        machine.RTC().datetime((tm[0], tm[1], tm[2], tm[6] + 1, tm[3], tm[4], tm[5], 0))
 
     async def start(self):
         if config.ID_DEVICE== "":
@@ -422,6 +495,7 @@ class smacInit():
         #client.subscribe( "D1" )
         #client.subscribe( "D2" )
         client.process_message = self.on_message
+        client.on_start = self.on_start
 
         download_software_status = config.get_config_variable(key="download_software_status")
         if download_software_status != None:
@@ -439,6 +513,16 @@ class smacInit():
 
 
         if ESP:
+            try:
+                #from ntptime import settime
+                print("before internet time", time.localtime())
+                self.setlocaltime()
+                print("after internet time", time.localtime())
+                self.TIME_SYNC = True
+                #print("TIME SET", time.localtime())
+            except Exception as e:
+                print("Internet Time not Set", e)
+                self.TIME_SYNC = False
             with open("device.json", "r") as f:
                 try:
                     f1 = json.loads(f.read())
@@ -449,11 +533,14 @@ class smacInit():
                         type_prop = p["type_property"]
                         #instance = p["instance"]
                         ip_pin = p["pin_input"]
-                        ip_pin = ip_pin.split(",")
+                        if(ip_pin != None) and (ip_pin != ""):
+                            ip_pin = ip_pin.split(",")
                         op_pin = p["pin_output"]
                         op_pin = op_pin.split(",")
                         pre_val = config.get_config_variable("{}".format(id_prop))
+                        pre_val = 0 if(pre_val == None) else pre_val
                         config.update_config_variable(key=id_prop+"_time", value=time.time())
+                        config.PROP_TYPE[id_prop] = type_prop
                         print("prevel: {}".format(pre_val))
                         if type_prop == SMAC_PROPERTY["FAN"]:
                             #config.PROP["{}:{}".format(prop, instance)] = Fan( input=ip_pin[0], output=op_pin, value=pre_val )
@@ -463,6 +550,7 @@ class smacInit():
                             config.PROP_INSTANCE[id_prop] = Switch( input=ip_pin[0], output=op_pin[0], value=pre_val, id_property=id_prop )
                         #time.sleep(.1)
                         #await  asyncio.sleep(.1)
+                    print(config.PROP_INSTANCE)
                 except Exception as e:
                     print("error ip config: {}".format(e))
 
