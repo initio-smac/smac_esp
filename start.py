@@ -423,12 +423,23 @@ class smacInit():
                         tim = value.split(":")
                         hour = tim[0]
                         minute = tim[1]
+                        DOWLIST = tim[2].split(",")
                         cur_time = time.localtime()
                         cur_hour = cur_time[3]
                         cur_min = cur_time[4]
+                        cur_DOW = cur_time[6]
                         print("hour, min, local_hour, local_min", hour, minute, cur_hour, cur_min)
-                        if self.TIME_SYNC and (hour == str(cur_hour) ) and (minute == str(cur_min)):
+                        print("DOWLIST", DOWLIST)
+                        print("CUR_DOW", cur_DOW)
+                        print( DOWLIST[cur_DOW] )
+                        print(hour == str(cur_hour))
+                        print(minute == str(cur_min))
+                        print(self.TIME_SYNC)
+                        if self.TIME_SYNC and (int(hour) == cur_hour ) and (int(minute) == cur_min) and int(DOWLIST[cur_DOW]):
+                            print("triggering context", id_context)
                             self.trigger_context(id_context)
+                        else:
+                            print("not triggered")
 
                     elif type_trigger == smac_keys["TYPE_TRIGGER_PROP"]:
                         print("val, local_val", value, config.PROP_INSTANCE[id_property].value())
