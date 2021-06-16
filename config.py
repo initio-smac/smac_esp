@@ -4,6 +4,7 @@ import json
 class Config():
     PROPERTY = []
     PROP_INSTANCE = {}
+    PROP_TYPE = {}
     WIFI_CONFIG_1 = {}
     WIFI_CONFIG_2 = {}
     AP_CONFIG = {}
@@ -118,5 +119,114 @@ class Config():
                 c2.close()
         except Exception as e:
             print("update config file err: {}".format(e))
+
+    def add_action(self, id_topic, id_context, id_device, id_property, value):
+        try:
+            with open('action.json', "r") as a1:
+                actions = json.load(a1)
+                a1.close()
+
+            id_act = "{}:{}:{}:{}".format(id_topic, id_context, id_device, id_property)
+            #if id_act not in actions.keys():
+            with open('action.json', "w") as c2:
+                    d = actions.copy()
+                    d[id_act] = value
+                    c2.write(json.dumps(d))
+                    c2.close()
+        except Exception as e:
+            print("add action err: {}".format(e))
+
+    def get_action(self, id_topic, id_context, id_device, id_property):
+        try:
+            with open('action.json', "r") as c1:
+                actions = json.load(c1)
+                id_act = "{}:{}:{}:{}".format(id_topic, id_context, id_device, id_property)
+                c1.close()
+                if id_act in actions.keys():
+                    return actions[id_act]
+                return {}
+        except Exception as e:
+            print("get action err:{}".format(e) )
+            return None
+
+    def remove_action(self, id_topic, id_context, id_device, id_property):
+        try:
+            with open('action.json', "r") as c1:
+                actions = json.load(c1)
+                id_act = "{}:{}:{}:{}".format(id_topic, id_context, id_device, id_property)
+                c1.close()
+                if id_act in actions.keys():
+                    del actions[id_act]
+            with open('action.json', 'w') as c2:
+                c2.write(json.dumps(actions))
+                c2.close()
+                return 1
+        except Exception as e:
+            print("remove action err:{}".format(e) )
+            return 0
+
+    def get_action_all(self):
+        try:
+            with open('action.json', "r") as c1:
+                actions = json.load(c1)
+                c1.close()
+                return actions
+        except Exception as e:
+            print("get action all err:{}".format(e) )
+            return {}
+
+    def add_trigger(self, id_topic, id_context, id_device, id_property, type_trigger, value):
+        try:
+            with open('trigger.json', "r") as a1:
+                triggers = json.load(a1)
+                a1.close()
+
+            id_trig = "{}:{}:{}:{}:{}".format(id_topic, id_context, id_device, id_property, type_trigger)
+            with open('trigger.json', "w") as c2:
+                d = triggers.copy()
+                d[id_trig] = value
+                c2.write(json.dumps(d))
+                c2.close()
+        except Exception as e:
+            print("add trigger err: {}".format(e))
+
+    def get_trigger(self, id_topic, id_context, id_device, id_property, type_trigger):
+        try:
+            with open('trigger.json', "r") as c1:
+                triggers = json.load(c1)
+                id_trig = "{}:{}:{}:{}:{}".format(id_topic, id_context, id_device, id_property, type_trigger)
+                c1.close()
+                if id_trig in triggers.keys():
+                    return triggers[id_trig]
+                return {}
+        except Exception as e:
+            print("get trigger err:{}".format(e) )
+            return {}
+
+    def remove_trigger(self, id_topic, id_context, id_device, id_property, type_trigger):
+        try:
+            with open('trigger.json', "r") as c1:
+                triggers = json.load(c1)
+                id_trig = "{}:{}:{}:{}:{}".format(id_topic, id_context, id_device, id_property, type_trigger)
+                c1.close()
+                if id_trig in triggers.keys():
+                    del triggers[id_trig]
+            with open('trigger.json', 'w') as c2:
+                c2.write(json.dumps(triggers))
+                c2.close()
+                return 1
+        except Exception as e:
+            print("remove trigger err:{}".format(e) )
+            return 0
+
+    def get_trigger_all(self):
+        #try:
+            with open('trigger.json', "r") as c1:
+                triggers = json.load(c1)
+                c1.close()
+                return triggers
+        #except Exception as e:
+            #print("get trigger all err:{}".format(e) )
+            #return {}
 
 config = Config()

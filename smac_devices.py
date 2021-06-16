@@ -9,14 +9,15 @@ from machine import Pin
 class Switch():
 	op_indicator = None
 	ID_PROP = None
+	input = None
 
 	#op_indicate
 	def __init__(self, input, output, op_indicator=None, value=0, id_property=None, *args):
 		if id_property != None:
 			self.ID_PROP = id_property
-		ip = Pin( int(input), Pin.IN, Pin.PULL_DOWN)
-		#self.input =  DebouncedSwitch(ip, self.handle_ip_change )
-		self.input = ip
+		if(input != "") and (input != None):
+			ip = Pin(int(input), Pin.IN, Pin.PULL_DOWN)
+			self.input =  DebouncedSwitch(ip, self.handle_ip_change )
 		self.output = Pin( int(output), Pin.OUT)
 		print("op_indicator: {}".format( op_indicator) )
 		if op_indicator != None:
@@ -70,13 +71,14 @@ class Fan():
 	MAX_SPEED = 4
 	MIN_SPEED = 0
 	ID_PROP = None
+	input = None
 
 	def __init__(self, input, output=[], op_indicator=None, value=0, id_property=None, *args):
 		if id_property != None:
 			self.ID_PROP = id_property
-		ip = Pin( int(input), Pin.IN, Pin.PULL_DOWN)
-		#self.input =  DebouncedSwitch(ip, self.handle_ip_change_fan )
-		self.input = ip
+		if(input != "") and (input != None):
+			ip = Pin(int(input), Pin.IN, Pin.PULL_DOWN)
+			self.input =  DebouncedSwitch(ip, self.handle_ip_change_fan )
 		if len(output) < 3:
 			raise Exception("Three Pins are required for Fan output. Only {} pins are given.".format(len(output)) )
 		self.output = [ Pin( int(i), Pin.OUT) for i in output ]
@@ -118,6 +120,9 @@ class Fan():
 			#print(self.speed)
 		except Exception as e:
 			print("change speed err: {}".format(e))
+
+	def value(self):
+		return self.speed
 
 	def handle_ip_change_fan(self, *args):
 		#value = 0 if (self.speed == self.MAX_SPEED) else (self.speed+1)
