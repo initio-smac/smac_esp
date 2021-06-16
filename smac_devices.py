@@ -1,23 +1,25 @@
 import time
 
 from config import config
-from debounce import DebouncedSwitch
+#from debounce import DebouncedSwitch
 from machine import Pin
 
 
 
-class Switch():
+class SmacSwitch:
 	op_indicator = None
+	input_pin = None
 	ID_PROP = None
-	input = None
+
 
 	#op_indicate
-	def __init__(self, input, output, op_indicator=None, value=0, id_property=None, *args):
+	def __init__(self, input_pin, output, op_indicator=None, value=0, id_property=None, *args):
 		if id_property != None:
 			self.ID_PROP = id_property
-		if(input != "") and (input != None):
-			ip = Pin(int(input), Pin.IN, Pin.PULL_DOWN)
-			self.input =  DebouncedSwitch(ip, self.handle_ip_change )
+		if(input_pin != "") and (input_pin != None):
+			ip = Pin(int(input_pin), Pin.IN, Pin.PULL_DOWN)
+			#self.input_pin =  DebouncedSwitch(ip, self.handle_ip_change )
+			self.input_pin = ip
 		self.output = Pin( int(output), Pin.OUT)
 		print("op_indicator: {}".format( op_indicator) )
 		if op_indicator != None:
@@ -48,6 +50,7 @@ class Switch():
 		#else:
 		#	self.on()
 		print("changed", self.value())
+		print(args)
 		print(self.ID_PROP)
 		if self.ID_PROP != None:
 			val = 1 - self.value()
@@ -55,30 +58,31 @@ class Switch():
 			config.update_config_variable(key=str(self.ID_PROP) + "_time", value=time.time())
 
 
-class Geyser(Switch):
+class Geyser(SmacSwitch):
 	pass
 
 
-class Light(Switch):
+class Light(SmacSwitch):
 	pass
 
-class AC(Switch):
+class AC(SmacSwitch):
 	pass
 
-class Fan():
+class SmacFan:
 	op_indicator = None
 	speed = 0
 	MAX_SPEED = 4
 	MIN_SPEED = 0
 	ID_PROP = None
-	input = None
+	input_pin = None
 
-	def __init__(self, input, output=[], op_indicator=None, value=0, id_property=None, *args):
+	def __init__(self, input_pin, output=[], op_indicator=None, value=0, id_property=None, *args):
 		if id_property != None:
 			self.ID_PROP = id_property
-		if(input != "") and (input != None):
-			ip = Pin(int(input), Pin.IN, Pin.PULL_DOWN)
-			self.input =  DebouncedSwitch(ip, self.handle_ip_change_fan )
+		if(input_pin != "") and (input_pin != None):
+			ip = Pin(int(input_pin), Pin.IN, Pin.PULL_DOWN)
+			#self.input_pin =  DebouncedSwitch(ip, self.handle_ip_change_fan )
+			self.input_pin = ip
 		if len(output) < 3:
 			raise Exception("Three Pins are required for Fan output. Only {} pins are given.".format(len(output)) )
 		self.output = [ Pin( int(i), Pin.OUT) for i in output ]

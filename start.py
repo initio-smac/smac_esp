@@ -8,7 +8,8 @@ try:
     from machine import Timer
     import uasyncio as asyncio
     import wifi_client
-    from smac_devices import Fan, Switch
+    from smac_devices import SmacFan, SmacSwitch
+
     ESP = True
 except Exception as e:
     print(e)
@@ -369,7 +370,9 @@ class smacInit():
         print(type(config.INTERVAL_ONLINE))
         while 1:
             #print(self.PROPERTY)
+
             for num, prop in enumerate(self.PROPERTY):
+                #print("\n\n\n")
                 value = prop["value"]
                 if type(value) == str:
                     value = int(value)
@@ -378,6 +381,7 @@ class smacInit():
                 value_temp = config.get_config_variable(key=id_prop)
                 #print(prop)
                 if value_temp != value:
+                    print("\n\n\n")
                     lastUpdated_time = config.get_config_variable(key=str(id_prop) + "_time")
                     if lastUpdated_time == None:
                         lastUpdated_time = time.time()
@@ -453,30 +457,31 @@ class smacInit():
     def set_property(self, id_prop, type_prop, value):
             print("TYPE_PROP", type_prop)
             print(type_prop == SMAC_PROPERTY["FAN"])
+            if config.PROP_INSTANCE.get(id_prop, None) != None:
         #try:
-            if type_prop == SMAC_PROPERTY["SWITCH"]:
-                #config.update_config_variable(key=id_prop, value=value)
-                if value:
-                    config.PROP_INSTANCE[id_prop].on()
-                else:
-                    config.PROP_INSTANCE[id_prop].off()
-                d = {}
-                d[smac_keys["ID_PROPERTY"]] = id_prop
-                d[smac_keys["ID_DEVICE"]] = config.ID_DEVICE
-                d[smac_keys["VALUE"]] = value
-                client.send_message(frm=config.ID_DEVICE, to="#", message=d, cmd=smac_keys["CMD_STATUS_SET_PROPERTY"],
-                                    udp=True, tcp=False)
-                return True
-            if type_prop == SMAC_PROPERTY["FAN"]:
-                print("VAL:", value)
-                config.PROP_INSTANCE[id_prop].change_speed(value)
-                d = {}
-                d[smac_keys["ID_PROPERTY"]] = id_prop
-                d[smac_keys["ID_DEVICE"]] = config.ID_DEVICE
-                d[smac_keys["VALUE"]] = value
-                client.send_message(frm=config.ID_DEVICE, to="#", message=d, cmd=smac_keys["CMD_STATUS_SET_PROPERTY"],
-                                    udp=True, tcp=False)
-                return True
+                if type_prop == SMAC_PROPERTY["SWITCH"]:
+                    #config.update_config_variable(key=id_prop, value=value)
+                    if value:
+                        config.PROP_INSTANCE[id_prop].on()
+                    else:
+                        config.PROP_INSTANCE[id_prop].off()
+                    d = {}
+                    d[smac_keys["ID_PROPERTY"]] = id_prop
+                    d[smac_keys["ID_DEVICE"]] = config.ID_DEVICE
+                    d[smac_keys["VALUE"]] = value
+                    client.send_message(frm=config.ID_DEVICE, to="#", message=d, cmd=smac_keys["CMD_STATUS_SET_PROPERTY"],
+                                        udp=True, tcp=False)
+                    return True
+                if type_prop == SMAC_PROPERTY["FAN"]:
+                    print("VAL:", value)
+                    config.PROP_INSTANCE[id_prop].change_speed(value)
+                    d = {}
+                    d[smac_keys["ID_PROPERTY"]] = id_prop
+                    d[smac_keys["ID_DEVICE"]] = config.ID_DEVICE
+                    d[smac_keys["VALUE"]] = value
+                    client.send_message(frm=config.ID_DEVICE, to="#", message=d, cmd=smac_keys["CMD_STATUS_SET_PROPERTY"],
+                                        udp=True, tcp=False)
+                    return True
         #except Exception as e:
         #    print("Exception during set_property: {}".format(e) )
 
@@ -555,10 +560,10 @@ class smacInit():
                         print("prevel: {}".format(pre_val))
                         if type_prop == SMAC_PROPERTY["FAN"]:
                             #config.PROP["{}:{}".format(prop, instance)] = Fan( input=ip_pin[0], output=op_pin, value=pre_val )
-                            config.PROP_INSTANCE[id_prop] = Fan( input=ip_pin[0], output=op_pin, value=pre_val, id_property=id_prop )
+                            config.PROP_INSTANCE[id_prop] = SmacFan( input_pin=ip_pin[0], output=op_pin, value=pre_val, id_property=id_prop )
                         elif type_prop == SMAC_PROPERTY["SWITCH"]:
                             #config.PROP["{}:{}".format(prop, instance)] = Switch( input=ip_pin[0], output=op_pin[0], value=pre_val )
-                            config.PROP_INSTANCE[id_prop] = Switch( input=ip_pin[0], output=op_pin[0], value=pre_val, id_property=id_prop )
+                            config.PROP_INSTANCE[id_prop] = SmacSwitch( input_pin=ip_pin[0], output=op_pin[0], value=pre_val, id_property=id_prop )
                         #time.sleep(.1)
                         #await  asyncio.sleep(.1)
                     print(config.PROP_INSTANCE)
