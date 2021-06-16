@@ -15,7 +15,8 @@ class Switch():
 		if id_property != None:
 			self.ID_PROP = id_property
 		ip = Pin( int(input), Pin.IN, Pin.PULL_DOWN)
-		self.input =  DebouncedSwitch(ip, self.handle_ip_change )
+		#self.input =  DebouncedSwitch(ip, self.handle_ip_change )
+		self.input = ip
 		self.output = Pin( int(output), Pin.OUT)
 		print("op_indicator: {}".format( op_indicator) )
 		if op_indicator != None:
@@ -74,7 +75,8 @@ class Fan():
 		if id_property != None:
 			self.ID_PROP = id_property
 		ip = Pin( int(input), Pin.IN, Pin.PULL_DOWN)
-		self.input =  DebouncedSwitch(ip, self.handle_ip_change_fan )
+		#self.input =  DebouncedSwitch(ip, self.handle_ip_change_fan )
+		self.input = ip
 		if len(output) < 3:
 			raise Exception("Three Pins are required for Fan output. Only {} pins are given.".format(len(output)) )
 		self.output = [ Pin( int(i), Pin.OUT) for i in output ]
