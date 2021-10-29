@@ -7,7 +7,7 @@
       "value_min": "0",
       "value_max": "1",
       "pin_output": "2",
-      "pin_input": "33"
+      "pin_input": "26"
     },
    {
       "id_property": "P1",
@@ -17,7 +17,7 @@
       "value_min": "0",
       "value_max": "1",
       "pin_output": "4",
-      "pin_input": "34"
+      "pin_input": "27"
     },
    {
       "id_property": "P2",
@@ -27,16 +27,16 @@
       "value_min": "0",
       "value_max": "1",
       "pin_output": "5",
-      "pin_input": "35"
+      "pin_input": "32"
    },
    {
       "id_property": "P3",
-      "type_property": "0",
+      "type_property": "1",
       "name_property": "FAN",
       "value": "0",
       "value_min": "0",
       "value_max": "4",
       "pin_output": "12,13,14",
-      "pin_input": "32"
+      "pin_input": "33"
   }
 ]

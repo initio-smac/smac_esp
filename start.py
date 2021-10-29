@@ -269,7 +269,7 @@ class smacInit():
 
 
                 if cmd == smac_keys["CMD_UPDATE_INTERVAL_ONLINE"]:
-                    interval = data.get(smac_keys["INTERVAL"])
+                    interval = data.get(smac_keys["INTERVAL"], 20)
                     passkey = data.get(smac_keys["PASSKEY"])
                     id_device = data.get(smac_keys["ID_DEVICE"])
                     if id_device == config.ID_DEVICE:
@@ -368,6 +368,7 @@ class smacInit():
         COUNTER = 0
         print("INTERVAL", config.INTERVAL_ONLINE)
         print(type(config.INTERVAL_ONLINE))
+        print(self.PROPERTY)
         while 1:
             #print(self.PROPERTY)
 
@@ -380,6 +381,10 @@ class smacInit():
                 type_prop = prop["type_property"]
                 value_temp = config.get_config_variable(key=id_prop)
                 #print(prop)
+                #print("num", num)
+                #print(prop)
+                #print(value)
+                #print(value_temp)
                 if value_temp != value:
                     print("\n\n\n")
                     lastUpdated_time = config.get_config_variable(key=str(id_prop) + "_time")
@@ -394,6 +399,7 @@ class smacInit():
                     print("t_diff", t_diff)
                     if t_diff > .2:
                         changed = self.set_property(id_prop, type_prop, value_temp)
+                        print("ch", changed)
                         if changed:
                             self.PROPERTY[num]["value"] = value_temp
 
@@ -411,9 +417,8 @@ class smacInit():
 
             #print(COUNTER)
             #print(COUNTER % (2*config.INTERVAL_ONLINE) )
-            if(COUNTER % (2*config.INTERVAL_ONLINE)) == 0:
-                client.send_message(frm=config.ID_DEVICE, to="#", cmd=smac_keys["CMD_ONLINE"], message={}, udp=True,
-                                    tcp=False)
+            if(COUNTER % (config.INTERVAL_ONLINE)) == 0:
+                client.send_message(frm=config.ID_DEVICE, to="#", cmd=smac_keys["CMD_ONLINE"], message={})
 
             if(COUNTER % 600) == 0:
                 print("checking triggers on time:", time.localtime())
@@ -452,7 +457,7 @@ class smacInit():
 
 
             COUNTER += 1
-            await asyncio.sleep(.1)
+            await asyncio.sleep(1)
 
     def set_property(self, id_prop, type_prop, value):
             print("TYPE_PROP", type_prop)
@@ -499,6 +504,20 @@ class smacInit():
         tm = time.localtime(t + offset)
         print("t, tm", t, tm)
         machine.RTC().datetime((tm[0], tm[1], tm[2], tm[6] + 1, tm[3], tm[4], tm[5], 0))
+
+
+    async def test_pins(self):
+        from machine import Pin
+        pins = [Pin(j, Pin.OUT) for j in [2, 4, 5, 12, 13, 14] ]
+        await asyncio.sleep(1)
+        while 1:
+            for i in pins:
+                i.on()
+            await asyncio.sleep(5)
+            for i in pins:
+                i.off()
+            await asyncio.sleep(5)
+
 
     async def start(self):
         if config.ID_DEVICE== "":
@@ -579,8 +598,10 @@ class smacInit():
             self.send_device_info(dest_topic="#")
             t1 = asyncio.create_task(client.main())
             t2 = asyncio.create_task(self.interval())
+            #t3 = asyncio.create_task(self.test_pins())
             await t2
             await t1
+            #await t3
             #asyncio.gather( self.interval(), client.main())
         else:
             #import threading

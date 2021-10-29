@@ -1,7 +1,7 @@
 import time
 
 from config import config
-#from debounce import DebouncedSwitch
+from debounce import DebouncedSwitch
 from machine import Pin
 
 
@@ -17,9 +17,11 @@ class SmacSwitch:
 		if id_property != None:
 			self.ID_PROP = id_property
 		if(input_pin != "") and (input_pin != None):
-			ip = Pin(int(input_pin), Pin.IN, Pin.PULL_DOWN)
-			#self.input_pin =  DebouncedSwitch(ip, self.handle_ip_change )
-			self.input_pin = ip
+			ip = Pin(int(input_pin), Pin.IN)
+			#ip.irq(handler=self.handle_ip_change)
+			#self.input_pin = ip
+			self.input_pin =  DebouncedSwitch(ip, self.handle_ip_change )
+
 		self.output = Pin( int(output), Pin.OUT)
 		print("op_indicator: {}".format( op_indicator) )
 		if op_indicator != None:
@@ -53,7 +55,10 @@ class SmacSwitch:
 		print(args)
 		print(self.ID_PROP)
 		if self.ID_PROP != None:
-			val = 1 - self.value()
+			#val = 1 - self.value()
+			val = config.get_config_variable(key=self.ID_PROP)
+			val = 1 - val
+			print(val)
 			config.update_config_variable(key=self.ID_PROP, value=val)
 			config.update_config_variable(key=str(self.ID_PROP) + "_time", value=time.time())
 
@@ -80,9 +85,11 @@ class SmacFan:
 		if id_property != None:
 			self.ID_PROP = id_property
 		if(input_pin != "") and (input_pin != None):
-			ip = Pin(int(input_pin), Pin.IN, Pin.PULL_DOWN)
-			#self.input_pin =  DebouncedSwitch(ip, self.handle_ip_change_fan )
-			self.input_pin = ip
+			ip = Pin(int(input_pin), Pin.IN)
+			#ip.irq(handler=self.handle_ip_change_fan)
+			#self.input_pin = ip
+			self.input_pin =  DebouncedSwitch(ip, self.handle_ip_change_fan )
+
 		if len(output) < 3:
 			raise Exception("Three Pins are required for Fan output. Only {} pins are given.".format(len(output)) )
 		self.output = [ Pin( int(i), Pin.OUT) for i in output ]
@@ -98,28 +105,36 @@ class SmacFan:
 			s1, s2, s3= self.output
 			if value == 0:
 				s1.off()
+				time.sleep(.5)
 				s2.off()
+				time.sleep(.5)
 				s3.off()
 			elif value == 1:
 				s1.on()
+				time.sleep(.5)
 				s2.off()
+				time.sleep(.5)
 				s3.off()
 			elif value == 2:
 				s1.off()
+				time.sleep(.5)
 				s2.on()
+				time.sleep(.5)
 				s3.off()
 			elif value == 3:
 				s1.on()
 				time.sleep(.5)
 				s2.on()
+				time.sleep(.5)
 				s3.off()
 			elif value == 4:
 				s1.off()
-				s2.on()
-				time.sleep(.5)
-				s3.on()
 				time.sleep(.5)
 				s2.off()
+				time.sleep(.5)
+				s3.on()
+				#time.sleep(.5)
+				#s2.off()
 			self.speed = value
 			#print(self.speed)
 		except Exception as e:
