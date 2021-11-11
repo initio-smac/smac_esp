@@ -2,11 +2,13 @@ import usocket, os
 
 
 class Response:
+    saveToFileDone = False
 
     def __init__(self, socket, saveToFile=None):
         self._socket = socket
         self._saveToFile = saveToFile
         self._encoding = 'utf-8'
+
         if saveToFile is not None:
             CHUNK_SIZE = 512  # bytes
             with open(saveToFile, 'w') as outfile:
@@ -17,6 +19,8 @@ class Response:
                 outfile.close()
 
             self.close()
+            self.saveToFileDone = True
+            print("written to file")
 
     def close(self):
         if self._socket:
@@ -75,12 +79,14 @@ class HttpClient:
         if ':' in host:
             host, port = host.split(':', 1)
             port = int(port)
+        #print("host", host)
+        #print("port", port)
 
         ai = usocket.getaddrinfo(host, port, 0, usocket.SOCK_STREAM)
         if len(ai) < 1:
             raise ValueError('You are not connected to the internet...')
         ai = ai[0]
-
+        #print(ai)
         s = usocket.socket(ai[0], ai[1], ai[2])
         try:
             s.connect(ai[-1])

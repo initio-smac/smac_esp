@@ -9,7 +9,8 @@ try:
     import uasyncio as asyncio
     import wifi_client
     from smac_devices import SmacFan, SmacSwitch
-
+    import _thread
+    from smac_ota2 import smacOTA
     ESP = True
 except Exception as e:
     print(e)
@@ -261,11 +262,12 @@ class smacInit():
 
                 if cmd == smac_keys["CMD_UPDATE_SOFTWARE"]:
                     config.update_config_variable(key="mode", value=1)
-                    config.update_config_variable(key="download_software", value=1)
-                    config.update_config_variable(key="download_software_requested_by", value=frm)
+                    #config.update_config_variable(key="download_software", value=1)
+                    #config.update_config_variable(key="download_software_requested_by", value=frm)
                     print("Restarting")
                     time.sleep(1)
                     machine.reset()
+
 
 
                 if cmd == smac_keys["CMD_UPDATE_INTERVAL_ONLINE"]:

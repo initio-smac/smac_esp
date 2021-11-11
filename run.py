@@ -7,7 +7,12 @@ MODE = config.MODE
 print("MODE", MODE)
 #MODE = 1
 if MODE == 1:
-    import web_server
+    #import web_server
+    import wifi_client
+    import _thread
+    from smac_ota2 import smacOTA
+    print("Initiating Update Software")
+    smacOTA.download_update()
 elif MODE == 0:
     import start
 
