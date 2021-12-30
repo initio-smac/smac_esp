@@ -1,0 +1,42 @@
+[
+    {
+      "id_property": "P0",
+      "type_property": "0",
+      "name_property": "SWITCH1",
+      "value": "0",
+      "value_min": "0",
+      "value_max": "1",
+      "pin_output": "2",
+      "pin_input": "26"
+    },
+   {
+      "id_property": "P1",
+      "type_property": "0",
+      "name_property": "SWITCH2",
+      "value": "0",
+      "value_min": "0",
+      "value_max": "1",
+      "pin_output": "4",
+      "pin_input": "27"
+    },
+   {
+      "id_property": "P2",
+      "type_property": "0",
+      "name_property": "SWITCH3",
+      "value": "0",
+      "value_min": "0",
+      "value_max": "1",
+      "pin_output": "5",
+      "pin_input": "32"
+   },
+   {
+      "id_property": "P3",
+      "type_property": "0",
+      "name_property": "SWITCH4",
+      "value": "0",
+      "value_min": "0",
+      "value_max": "1",
+      "pin_output": "12",
+      "pin_input": "33"
+  }
+]

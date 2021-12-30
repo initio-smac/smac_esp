@@ -5,9 +5,9 @@ import machine
 
 from http_client import HttpClient
 import utime
-import _thread
 import utarfile
 import uos
+from config import config
 
 # tar creation
 # tar -cf <name.tar> <file1> <file2> <dir1> <dir2>
@@ -49,18 +49,36 @@ class SmacOTA:
             utime.sleep(.5)
         led.off()
 
-    def download_update(self):
+    def get_update_version(self):
+        gc.collect()
+        print("checking for updates...")
+        FILENAME =  "version.json"
+        url = self.SMAC_NEW_UPDATE_URL + FILENAME
+        #try:
+        resp = self.client.request(method="GET", url=url)
+        print(resp)
+        if resp.status_code == 200:
+            return resp.json()["version"]
+
+        return -1
+        #except Exception as e:
+        print("Error while checking for updates", e)
+        return -1
+
+
+
+    def download_update(self, version):
         print("downloading software2...")
         self.DOWNLOAD_COMPLETE = 0
-        FILENAME = "esp32.tar"
+        FILENAME = "esp32_v{}.tar".format(version)
         url = self.SMAC_NEW_UPDATE_URL + FILENAME
         #_thread.start_new_thread(self.toggle_pin, (2,))
         try:
-
             resp = self.client.request(method="GET", url=url, saveToFile=FILENAME)
             if resp.status_code == 200:
                 ext = TarExtracter()
                 ext.extract(FILENAME)
+                config.update_config_variable(key="version", value=version)
                 self.DOWNLOAD_COMPLETE = 1
                 print("Software Update is success. Rebooting Device...")
             else:
@@ -70,11 +88,11 @@ class SmacOTA:
             print("Error while downloadin update", e)
             self.DOWNLOAD_COMPLETE = 1
         utime.sleep(2)
-        from config import config
         config.update_config_variable(key="mode", value=0)
         machine.reset()
 
 
+    # old method, dont use it
     def download_update2(self):
         print("downloading software...")
         self.DOWNLOAD_COMPLETE = 0
@@ -102,7 +120,6 @@ class SmacOTA:
             self.DOWNLOAD_COMPLETE = 1
             print("Software Update is success. Rebooting Device...")
             utime.sleep(2)
-            from config import config
             config.update_config_variable(key="mode", value=0)
             machine.reset()
         else:

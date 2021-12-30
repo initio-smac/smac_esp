@@ -96,7 +96,7 @@
 </div>
 <div class="C_main">
     <div class="C_header">
-        Device Config
+        Config ESP
     </div>
 
 
@@ -138,10 +138,10 @@
         <div class="C_title"> Updates and Downloads </div> <br>
         <input type="button" value="check for updates"  id="id_check_for_update"> <br>
         <!-- <input type="button" value="download and install"  id="id_download_update" style="display:none;"> -->
-        <!-- <input type="button" value="download and install"  id="id_download_update" style="display: none;"> -->
+        <input type="button" value="download and install"  id="id_download_update" style="display: none;">
     </div><br>
 
-    <body class="C_block">
+    <div class="C_block">
         <input type="checkbox" id="id_set_mode"> Restart in Same Mode
         <input type="button" value="save and restart"  id="id_restart">
     <div> <br>
@@ -174,69 +174,19 @@
 
 
 
+
+
 </div>
 
-
 <script>
-    var DATA = {};
-    var id_info = document.getElementById("id_info")
+var DATA = {}
+$(document).ready(function(){
    function rest_call(url, method="GET", data={}, refresh_on_success=true) {
-        document.getElementById("id_loader").style.display = "block";
-        if(method == "POST"){
+	if(method == "POST"){
             data = JSON.stringify( data );
         }
-        var params = [];
-        for(var k in data) {
-            params.push(k + "=" + data[k]);
-        }
-        params = params.join("&")
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-             if (this.readyState == 4) {
-                document.getElementById("id_loader").style.display = "none";
-                if(this.status == 200) {
-                    var result = this.responseText;
-                    alert(this.responseText);
-                    if(url == "/check_for_update") {
-                        //document.getElementById("id_download_update").style.display = "block";
-                        //id_info.innerHTML = "New Update is available.";
-                        var resp = JSON.parse(result);
-                        if(resp["resp_code"] == 1) {
-                            var download = confirm("New Update Available. Download Now?");
-                            if(download) {
-                                document.getElementById("id_download_update").style.display = "block";
-                            }
-                        } else if(resp["resp_code"] == 0) {
-                            alert(resp["text"])
-                        } else {
-                            alert(resp["text"])
-                        }
-                        
-                    } else if( refresh_on_success ) {
-                        location.reload();
-                    } else {
-                        console.log(result);
-                        //id_info.innerHTML = result;
-                        alert(result);
-                    }
-                } else {
-                  alert(this.statusText)
 
-                }
-             }
-        };
-        if(method == "GET") {
-            var params = (params != "")? "?"+params : "";
-            xhttp.open(method, url+params, true);
-            xhttp.setRequestHeader("Content-type", "application/json; charset=utf-8");
-            xhttp.send(  );
-        } else if(method == "POST"){
-            xhttp.open(method, url, true);
-            xhttp.setRequestHeader("Content-type", "application/json; charset=utf-8");
-            xhttp.send( data  );
-        }
-
-        /*$.ajax({
+        $.ajax({
             url: url,
             type: method,
             data: data,
@@ -247,16 +197,16 @@
                     location.reload();
                 } else if(url == "/check_for_update") {
                     $("#id_download_update").show()
-                    id_info.innerHTML = "New Update is available.";
+                    $("#id_info").html("New Update is available.")
                 } else {
                     console.log(result);
-                    id_info.innerHTML = result;
+                    $("#id_info").html(result)
                 }
 
             },
             error: function(xhr, status, error) {
                  console.log(status);
-                 id_info.innerHTML = status;
+                 $("#id_info").html(status)
 
             },
             beforeSend: function() {
@@ -265,70 +215,12 @@
             complete: function(){
                  $("#id_loader").hide()
             },
-        });*/
+        });
 
 
    }
 
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-         if (this.readyState == 4) {
-            document.getElementById("id_loader").style.display = "none";
-            if(this.status == 200) {
-                var result = this.responseText;
-                try {
-                      console.log("res");
-                      console.log(result);
-                      var jd = JSON.parse(result);
-                      var connected_ssid = jd["connected_ssid"]
-                      var strength = jd["connected_ssid_strength"]
-                      if( connected_ssid == jd.wifi_config_1["ssid"]) {
-                        var conn = document.getElementById("id_conn1");
-                        conn.style.color = "green";
-                        conn.innerHTML = conn.innerHTML + " ("+ strength + "%) ";
-                      }
-                      document.getElementById('id_wifi_ssid_1').value = jd.wifi_config_1["ssid"];
-                      document.getElementById('id_wifi_password_1').value = jd.wifi_config_1["password"];
-                      if( connected_ssid == jd.wifi_config_2["ssid"]) {
-                        var conn = document.getElementById("id_conn2");
-                        conn.style.color = "green";
-                        conn.innerHTML = conn.innerHTML + " ("+ strength + "%) ";
-                      }
-                      document.getElementById('id_wifi_ssid_2').value = jd.wifi_config_2["ssid"];
-                      document.getElementById('id_wifi_password_2').value = jd.wifi_config_2["password"];
-                      document.getElementById('id_text_name_device').value = jd.name_device;
-                      document.getElementById('id_text_pin_device').value = jd.pin_device;
-
-                      var topics = jd.sub_topic;
-                      if(topics.length > 0) {
-                          var text = "";
-                          document.getElementsByClassName("C_topic_wrapper")[0].style.display = "block";
-                          for (i = 0; i < topics.length; i++) {
-                               id_topic = topics[i][0]
-                               if( (id_topic != "") && (id_topic != jd.id_device) && (id_topic != "#") && (id_topic != null) ) {
-                                    text += "<input type='checkbox' name='sel_topic' value='"+ id_topic +"'>" + topics[i][1] + "/" + topics[i][2] + "<br>";
-                               }
-                        }
-                          document.getElementById("id_topics").innerHTML +=  text;
-                      } else {
-                        document.getElementById("id_topics").innerHTML = "No homes";
-                        document.getElementById("id_remove_topic").style.display = "none";
-                      }
-                } catch(err) {
-                    console.log(err);
-                }
-            } else {
-              console.log(this.status);
-              console.log(this.statusText)
-            }
-         }
-    };
-    xhttp.open("GET", "/load_config", true);
-    xhttp.setRequestHeader("Content-type", "application/json; charset=utf-8");
-    document.getElementById("id_loader").style.display = "block";
-    xhttp.send();
-
-   /*$.getJSON('/load_config', function(jd) {
+   $.getJSON('/load_config', function(jd) {
           console.log()
           console.log(jd);
           DATA = jd
@@ -375,78 +267,82 @@
 	      //}
           //    $("#id_versions").append(text)
           //}
+         
+   });
 
-   });*/
-
-  /*document.getElementById("id_addgroup_submit").onclick = function(){
-      var group_id = document.getElementById("id_group_id").value
+  $("#id_addgroup_submit").click(function(){
+      var group_id = $("#id_group_id").val()
       console.log(group_id);
       var data = {}
       data["group_id"] = group_id
       rest_call(url="/send_group_request", method="GET", data=data)
-  };*/
+  });
 
-  document.getElementById("id_wifi_submit_1").onclick = function(){
-      var ssid = document.getElementById("id_wifi_ssid_1").value;
-      var password = document.getElementById("id_wifi_password_1").value;
+  $("#id_wifi_submit_1").click(function(){
+      var ssid = $("#id_wifi_ssid_1").val()
+      var password = $("#id_wifi_password_1").val()
       var data = {}
       data["ssid"] = ssid
       data["password"] = password
       data["connection"] = 1
       rest_call(url="/update_wifi", method="GET", data=data)
-  };
-
-  document.getElementById("id_wifi_submit_2").onclick = function(){
-      var ssid = document.getElementById("id_wifi_ssid_2").value;
-      var password = document.getElementById("id_wifi_password_2").value;
+  });
+  
+  $("#id_wifi_submit_2").click(function(){
+      var ssid = $("#id_wifi_ssid_2").val()
+      var password = $("#id_wifi_password_2").val()
       var data = {}
       data["ssid"] = ssid
       data["password"] = password
       data["connection"] = 2
       rest_call(url="/update_wifi", method="GET", data=data)
-  };
+  });
 
-  /*document.getElementById("id_mqtt_addr_submit").onclick = function(){
-      var mqtt_server = document.getElementById("id_mqtt_addr").value;
+  $("#id_mqtt_addr_submit").click(function(){
+      var mqtt_server = $("#id_mqtt_addr").val()
       console.log(mqtt_server);
       var data = {}
       data["mqtt_server"] = mqtt_server
       rest_call(url="/update_mqtt_server", method="GET", data=data)
-  };*/
+  });
 
-  document.getElementById("id_update_name_device").onclick = function(){
+  $("#id_update_name_device").click(function(){
       var data = {}
-      data["name_device"] = document.getElementById("id_text_name_device").value;
+      data["name_device"] = $("#id_text_name_device").val()
       console.log(data)
       rest_call(url="/update_name_device", method="GET", data=data)
-  };
+  });
 
-  document.getElementById("id_update_pin_device").onclick =function(){
+  $("#id_update_pin_device").click(function(){
       var data = {}
-      data["pin_device"] = document.getElementById("id_text_pin_device").value;
+      data["pin_device"] = $("#id_text_pin_device").val()
       console.log(data)
       rest_call(url="/update_pin_device", method="GET", data=data)
-  };
+  });
 
+  $("#id_download_version").click(function(){
+      var ver = $("input[name=sel_version]:checked").val();
+      console.log(ver);
+      var data = {}
+      data["version"] = ver
+      rest_call(url="/download_version", method="GET", data=data)
+  });
 
-  document.getElementById("id_restart").onclick = function(){
+  $("#id_restart").click(function(){
       console.log("restarting...");
       data = {}
-      data["mode"] = document.getElementById("id_set_mode").value;
+      data["mode"] = $("#id_set_mode:checked").val();
       rest_call(url="/restart", method="GET", data=data)
-  };
+  });
 
-  document.getElementById("id_remove_topic").onclick = function(){
+  $("#id_remove_topic").click(function(){
       var topics = [];
-      var t = document.getElementsByName("sel_topic");
-      for(i in t) {
-          if(t[i].checked) {
-            topics.push(t[i].value);
-          }
-      };
+      $("input[name=sel_topic]:checked").each(function() {
+            topics.push(this.value);
+      });
       //console.log(topics)
       if(topics.length == 0) {
-            id_info.innerHTML = "Select a Home to Remove"
+            $("#id_info").html("Select a Home to Remove")
       } else{
         //console.log(topics);
         //console.log(topics.values());
@@ -455,50 +351,28 @@
         console.log(data)
         rest_call(url="/remove_topic", method="GET", data=data)
       }
-  };
-
-  document.getElementById("id_check_for_update").onclick = function(){
+  });
+  
+  $("#id_check_for_update").click(function(){
       //console.log("checking for updates");
-      id_info.innerHTML = "Checking For Updates..."
+      $("#id_info").html("Checking For Updates.")
       var data = {}
-      //data["version"] = DATA.version
+      data["version"] = DATA.version
       rest_call(url="/check_for_update", method="GET", data=data, refresh_on_success=false)
-      /*var url = "https://smacsystem.com/download/esp32/version.json";
-      var xhttp = new XMLHttpRequest();
-      xhttp.onreadystatechange = function() {
-          if (this.readyState == 4) {
-              if(this.status == 200) {
-                  var result = this.responseText;
-                  alert(result);
-              }else {
-                alert("error while checking for updates");
-              }
-          }
-      };
-      xhttp.open("GET", url, true);
-      xhttp.withCredentials = false;
-      //xhttp.setRequestHeader("Content-type", "application/json; charset=utf-8");
-      xhttp.setRequestHeader('Access-Control-Allow-Origin', '*');
-      xhttp.send(  );*/
-  };
+  });
 
-  /*document.getElementById("id_check_for_update").onclick = function(){
+  $("#id_download_update").click(function(){
       //console.log("Downlo");
-      document.getElementById("id_info").innerHTML = "Downloading Updates.";
-      var data = {}
-      data["version"] = "02"
-      rest_call(url="/download_update", method="GET", data=data, refresh_on_success=false)
-  };*/
-
-  /*document.getElementById("id_download_update").onclick = function(){
-      //console.log("Downlo");
-      id_info.innerHTML = "Downloading Updates.";
+      $("#id_info").html("Downloading Updates.")
       var data = {}
       data["version"] = DATA.version
       rest_call(url="/download_update", method="GET", data=data, refresh_on_success=false)
-  };*/
+  });
 
+
+});
 
 </script>
+
 </body>
 </html>

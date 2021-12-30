@@ -1,33 +1,25 @@
 import gc
-#import network
+import usocket as socket
+import network
 #import uasyncio as asyncio
 import _thread
 
-from smac_ota import smacOTA
-#import smac_ota
+#from smac_ota import smacOTA
+import smac_ota
 import wifi_client
 import json
 from config import config
 import machine
-#from urequests import request
-#import http_client
+from urequests import request
 
 #ap = network.WLAN(network.AP_IF)
 #ap.active(True)
 #ap.config(essid="AP_MODE")
 
-#cli = http_client.HttpClient()
-#resp = cli.get("https://smacsystem.com/download/esp32/version.json")
-#gc.collect()
-#VERSION = config.VERSION
-#if resp.status_code == 200:
-#    VERSION = resp.json()["version"]
 
-#print( smacOTA.get_update_version() )
 
 def start_server():
     print("Staring Http server")
-    import usocket as socket
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind(('', 80))
     s.listen(5)
@@ -88,9 +80,8 @@ def start_server():
                 machine.reset()
                 response = "Resetting Device."
             elif http_path.find("/download_update") != -1:
-                #gc.collect()
+                gc.collect()
                 version = params.get("version", None)
-                print(params)
                 if version != None:
                     print("Downloading update...")
                     _thread.start_new_thread( smac_ota.smacOTA.download_update(version=version) )
@@ -98,22 +89,22 @@ def start_server():
             elif http_path.find("/check_for_update") != -1:
                 #ver = smacOTA.get_update_version()
                 # try:
-                #resp = request(method="GET", url="https://smacsystem.com/download/esp32/version.json")
-                #gc.collect()
-                #print(resp)
+                resp = request(method="GET", url="https://smacsystem.com/download/esp32/version.json")
+                gc.collect()
+                print(resp)
                 dat = {}
-                #if resp.status_code == 200:
-                cur_version = config.get_config_variable(key="version")
-                #ver = resp.json()["version"]
-                if VERSION != -1:
-                    if cur_version != VERSION:
-                        dat["resp_code"] = 1
-                        dat["version"] = VERSION
-                        dat["text"] = "New Updates Available"
-                    elif cur_version == VERSION:
-                        dat["resp_code"] = 0
-                        dat["version"] = VERSION
-                        dat["text"] = "Your Device is Upto Date"
+                if resp.status_code == 200:
+                    cur_version = config.get_config_variable(key="version")
+                    ver = resp.json()["version"]
+                    if ver != -1:
+                        if cur_version != ver:
+                            dat["resp_code"] = 1
+                            dat["version"] = ver
+                            dat["text"] = "New Updates Available"
+                        elif cur_version == ver:
+                            dat["resp_code"] = 0
+                            dat["version"] = ver
+                            dat["text"] = "Your Device is Upto Date"
                 else:
                     dat["resp_code"] = -1
                     dat["text"] =  "Error While Checking For Updates"
@@ -142,4 +133,4 @@ def start_server():
             conn.close()
 
 #_thread.start_new_thread( start_server, () )
-#start_server()
+start_server()

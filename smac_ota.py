@@ -1,114 +1,129 @@
-import urequests as requests
-from config import config
-import json
-import uos as os
-import machine
 import gc
 
-def check_connection(*args):
-    url = "https://smacsystem.com/download/esp32/version.json"
-    req = requests.get(url)
-    req.close()
-    if req.status_code == 200:
-        return True
-    else:
-        return False
+from machine import Pin
+import machine
 
+from http_client import HttpClient
+import utime
+import utarfile
+import uos
+from config import config
 
-def download_updates():
-    try:
-        DOWNLOAD_VERSION = config.get_config_file("download_version")
-        config_old = {}
-        invalid_version = [ "", None, "0", 0 ]
-        with open('config.json', "r") as c1:
-            config_old = json.load(c1)
-            c1.close()
-        
-        if (DOWNLOAD_VERSION not in invalid_version):
-            print("checking internet connection...")
-            while not check_connection():
-                pass
-            print("downloading version: {}".format(DOWNLOAD_VERSION))
-            url = "https://smacsystem.com/download/esp32/{}/files.json".format(DOWNLOAD_VERSION)
-            print(url)
-            req = requests.get(url)
-            res = req.json()
-            req.close()
-            print(res)
-            for f in res.keys():
-                print("downloading file: {}, path: {}".format(f, res[f]))
-                path = res[f]
-                d_paths = path.split("/")
-                
-                if d_paths[0] != "":
-                    print(d_paths)
+# tar creation
+# tar -cf <name.tar> <file1> <file2> <dir1> <dir2>
+# tar -cf esp32.tar file1
+
+class TarExtracter:
+
+    def extract(self, file):
+        t = utarfile.TarFile(file)
+        for i in t:
+            print("Extracting: {}".format(i.name) )
+            if i.type == utarfile.DIRTYPE:
+                if i.name[-1] == "/":
                     try:
-                        print("creating dir : {}".format(d_paths[0]) )
-                        os.mkdir(d_paths[0])
+                        uos.mkdir(i.name[:-1])
                     except Exception as e:
                         print(e)
-                    if len(d_paths) > 1:
-                        for num, i in enumerate(d_paths):
-                            #print(num)
-                            #print(len(d_paths)-1)
-                            if num < len(d_paths)-1:
-                                try:
-                                    print("creating dir : {}/{}".format(i, d_paths[num+1]) )
-                                    os.mkdir("/{}/{}".format(i, d_paths[num+1]))
-                                except Exception as e:
-                                    print(e)
-                    print(path)
-                    u = "https://smacsystem.com/download/esp32/{}/{}/{}".format(DOWNLOAD_VERSION, path, f)
-                else:
-                    u = "https://smacsystem.com/download/esp32/{}/{}".format(DOWNLOAD_VERSION, f)
-                #url_path = "{}/{}".format(path,f)
-                
-                print(u)
-                req1 = requests.get(u)
-                res1 = req1.text
-                if req1.status_code == 200:
-                    with open("{}/{}".format(path, f), "w" ) as f:
-                        f.write(res1)
-                req1.close()
-                
-                #print(res1)
-                
-            # update the variables
-            try:
-                print("updating new config file")
-                con = {}
-                with open('config.json', "r") as c1:
-                    con = json.load(c1)
-                    c1.close()
+            else:
+                f = t.extractfile(i)
+                with open(i.name, "wb") as f1:
+                    f1.write(f.read())
+        uos.remove(file)
+        gc.collect()
 
-                with open('config.json', "w") as c2:
-                    d = con.copy()
-                    if d.get("download_version", None) != None:
-                        del d["download_version"]
-                    d["VERSION"] = DOWNLOAD_VERSION
-                    d["SUB_TOPIC"] = config_old["SUB_TOPIC"]
-                    d["ID_DEVICE"] = config_old["ID_DEVICE"]
-                    d["NAME_DEVICE"] = config_old["NAME_DEVICE"]
-                    d["AP_CONFIG"] = config_old["AP_CONFIG"]
-                    d["WIFI_CONFIG"] = config_old["WIFI_CONFIG"]
-                    d["MODE"] = 0
-                    print(d)
-                    c2.write(json.dumps(d))
-                    c2.close()
-            except Exception as e:
-                print("update config file err: {}".format(e))
-            gc.collect()
-            print("\nSuccessfully downloaded version: {}\nRebooting...".format(DOWNLOAD_VERSION))
+
+
+class SmacOTA:
+    client = HttpClient()
+    SMAC_NEW_UPDATE_URL = "https://smacsystem.com/download/esp32/"
+    DOWNLOAD_COMPLETE = 0
+    CHUNK_SIZE = 512
+
+    def toggle_pin(self, pin):
+        led = Pin(pin, Pin.OUT)
+        while not self.DOWNLOAD_COMPLETE:
+            led.on()
+            utime.sleep(.5)
+            led.off()
+            utime.sleep(.5)
+        led.off()
+
+    def get_update_version(self):
+        gc.collect()
+        print("checking for updates...")
+        FILENAME =  "version.json"
+        url = self.SMAC_NEW_UPDATE_URL + FILENAME
+        #try:
+        resp = self.client.request(method="GET", url=url)
+        print(resp)
+        if resp.status_code == 200:
+            return resp.json()["version"]
+
+        return -1
+        #except Exception as e:
+        print("Error while checking for updates", e)
+        return -1
+
+
+
+    def download_update(self, version):
+        print("downloading software2...")
+        self.DOWNLOAD_COMPLETE = 0
+        FILENAME = "esp32_v{}.tar".format(version)
+        url = self.SMAC_NEW_UPDATE_URL + FILENAME
+        #_thread.start_new_thread(self.toggle_pin, (2,))
+        try:
+            resp = self.client.request(method="GET", url=url, saveToFile=FILENAME)
+            if resp.status_code == 200:
+                ext = TarExtracter()
+                ext.extract(FILENAME)
+                config.update_config_variable(key="version", value=version)
+                self.DOWNLOAD_COMPLETE = 1
+                print("Software Update is success. Rebooting Device...")
+            else:
+                self.DOWNLOAD_COMPLETE = 1
+                print("cannnot initiate Software Update.", resp.reason)
+        except Exception as e:
+            print("Error while downloadin update", e)
+            self.DOWNLOAD_COMPLETE = 1
+        utime.sleep(2)
+        config.update_config_variable(key="mode", value=0)
+        machine.reset()
+
+
+    # old method, dont use it
+    def download_update2(self):
+        print("downloading software...")
+        self.DOWNLOAD_COMPLETE = 0
+        url = self.SMAC_NEW_UPDATE_URL + "files.txt"
+        #url = "https://smacsystem.com/download/esp32/new/files.txt"
+        #url = "https://mpython.readthedocs.io/en/master/library/mPython/urequests.html"
+        resp = self.client.request(method="GET", url=url)
+        #gc.collect()
+        if resp.status_code == 200:
+            dat = resp.text.split("\n")
+            #_thread.start_new_thread(self.toggle_pin, (2,))
+            #print(dat)
+            for f in dat:
+                file_name, file_path = f.split(",")
+                file_url = self.SMAC_NEW_UPDATE_URL + file_path
+                self.download_file(file_url, file_path)
+                #if not downloaded:
+                #    self.DOWNLOAD_COMPLETE = 1
+                #    print("Cannot download file: {}. Aborting Software Update.".format(file_name))
+                #    #break
+                #    gc.collect()
+                #    return
+                gc.collect()
+                utime.sleep(5)
+            self.DOWNLOAD_COMPLETE = 1
+            print("Software Update is success. Rebooting Device...")
+            utime.sleep(2)
+            config.update_config_variable(key="mode", value=0)
             machine.reset()
-                    
         else:
-            url = "https://smacsystem.com/download/esp32/version.json"
-            req = requests.get(url)
-            res = req.json()
-            req.close()
-            #print(res)
-            ver = res.get("versions", [])
-            if len(ver) > 0:
-                config.update_config_file("VERSIONS", value=ver)
-    except Exception as e:
-        print(e)
+            print("cannnot initiate Software Update.", resp.reason)
+        resp.close()
+
+smacOTA = SmacOTA()

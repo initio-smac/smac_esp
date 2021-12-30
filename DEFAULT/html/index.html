@@ -226,7 +226,7 @@
              }
         };
         if(method == "GET") {
-            var params = (params != "")? "?"+params : "";
+            var params = (params == "")? "?"+params : "";
             xhttp.open(method, url+params, true);
             xhttp.setRequestHeader("Content-type", "application/json; charset=utf-8");
             xhttp.send(  );
@@ -462,8 +462,8 @@
       id_info.innerHTML = "Checking For Updates..."
       var data = {}
       //data["version"] = DATA.version
-      rest_call(url="/check_for_update", method="GET", data=data, refresh_on_success=false)
-      /*var url = "https://smacsystem.com/download/esp32/version.json";
+      //rest_call(url="/check_for_update", method="GET", data=data, refresh_on_success=false)
+      var url = "https://smacsystem.com/download/esp32/version.json";
       var xhttp = new XMLHttpRequest();
       xhttp.onreadystatechange = function() {
           if (this.readyState == 4) {
@@ -479,16 +479,8 @@
       xhttp.withCredentials = false;
       //xhttp.setRequestHeader("Content-type", "application/json; charset=utf-8");
       xhttp.setRequestHeader('Access-Control-Allow-Origin', '*');
-      xhttp.send(  );*/
+      xhttp.send(  );
   };
-
-  /*document.getElementById("id_check_for_update").onclick = function(){
-      //console.log("Downlo");
-      document.getElementById("id_info").innerHTML = "Downloading Updates.";
-      var data = {}
-      data["version"] = "02"
-      rest_call(url="/download_update", method="GET", data=data, refresh_on_success=false)
-  };*/
 
   /*document.getElementById("id_download_update").onclick = function(){
       //console.log("Downlo");
