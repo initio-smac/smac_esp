@@ -1,22 +1,36 @@
 from config import config
-#import time
 config.load_config_variable()
-#time.sleep(1)
+
+# wifi AP
+import network
+'''try:
+	wlan_ap = network.WLAN(network.AP_IF)
+	wlan_ap.active(True)
+	wlan_ap.config(essid="ESP32_D2")
+	#wlan.active(True)
+except Exception as e:
+	print("wifi ap err: {}".format(e))'''
+
 import wifi_client
 
 
+# run functions
 MODE = config.MODE
 print("MODE", MODE)
 MODE = 2
 if MODE == 2:
     import web_server
+    '''from urequests import request
+    resp = request(method="GET", url="https://smacsystem.com/download/esp32/version.json")
+    print("resp")
+    print(resp.json())'''
 elif MODE == 1:
     #import web_server
     #import wifi_client
     #import _thread
-    from smac_ota2 import smacOTA
+    from smac_ota import smacOTA
     print("Initiating Update Software")
-    smacOTA.download_update()
+    smacOTA.download_update(version="02")
 elif MODE == 0:
     import start
 

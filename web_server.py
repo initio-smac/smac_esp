@@ -3,13 +3,17 @@ import gc
 #import uasyncio as asyncio
 import _thread
 
-from smac_ota import smacOTA
+#from smac_ota import smacOTA
 #import smac_ota
+import re
+
 import wifi_client
+import usocket as socket
+import machine
 import json
 from config import config
-import machine
-#from urequests import request
+
+
 #import http_client
 
 #ap = network.WLAN(network.AP_IF)
@@ -17,7 +21,10 @@ import machine
 #ap.config(essid="AP_MODE")
 
 #cli = http_client.HttpClient()
-#resp = cli.get("https://smacsystem.com/download/esp32/version.json")
+#from urequests import request
+#resp = request(method="GET", url="https://smacsystem.com/download/esp32/version.json")
+#print("resp")
+#print(resp.json())
 #gc.collect()
 #VERSION = config.VERSION
 #if resp.status_code == 200:
@@ -25,9 +32,41 @@ import machine
 
 #print( smacOTA.get_update_version() )
 
+def get_body(conn, size):
+    data = b""
+    count = 0
+    with open("output.txt", "wb") as file:
+        while True:
+            chunk = conn.recv(1024)
+            print(len(chunk))
+            print(chunk)
+            file.write(chunk)
+            count += len(chunk)
+            if len(chunk) < 1024:
+                break
+        file.close()
+    print("written {} bytes outof {}".format(count, size))
+    '''while True:
+        chunk = conn.recv(1024)
+        if len(chunk) < 1024:
+            return data + chunk
+        else:
+            data += chunk'''
+    '''data = b""
+    while b"\r\n\r\n" not in data:
+        data += conn.recv(1024)
+    return data'''
+
+def get_head(conn):
+    """ gets headers from client """
+    data = b""
+    while not data.endswith(b"\r\n\r\n"):
+        data += conn.recv(1)
+    return data
+
 def start_server():
     print("Staring Http server")
-    import usocket as socket
+
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind(('', 80))
     s.listen(5)
@@ -35,13 +74,25 @@ def start_server():
         conn, addr = s.accept()
         try:
             print('Got a connection from %s' % str(addr))
+            #req = get_head(conn)
+
+            #print(req)
             req = conn.recv(1024)
             req = req.decode('utf-8')
+            lines = req.strip().splitlines()
+            request = lines[0]
+            headers = lines[1:]
+            headers = list(line.split(': ') for line in headers)
+            headers = dict(headers)
+            #print(headers)
+            print(request)
             params = {}
-            http_path = req.split("\n")[0]
-            http_path = http_path.split(" ")[1]
+            #http_path = req.split("\n")[0]
+            h = request.split(" ")
+            http_method = h[0]
+            http_path = h[1]
             paramstring = http_path.split('?')
-            print(paramstring)
+            #print(paramstring)
             if( len(paramstring) > 1 ) and (paramstring[1] != ""):
                 #paramstring = paramstring[1].split(' ')[0]  # chop off the HTTP version
                 paramarray = paramstring[1].split('&')
@@ -55,6 +106,23 @@ def start_server():
             #print(http_path.find("/load_config"))
             if http_path == "/":
                 response = open("html/index.html", "r").read()
+            elif http_path.find("/upload_software_file") != -1:
+                print(http_method)
+                size = int(headers['Content-Length'])
+                print(size)
+                f = get_body(conn, size)
+                #print(f)
+                #with open("output.txt", "wb") as file:
+                    #file.write(req.encode("utf-8"))
+                #    file.write(f)
+                gc.collect()
+                '''name = re.compile(b'name="file"; filename="(.+)"').search(f).group(1)
+                data1 = re.compile(
+                    b"WebKitFormBoundary((\n|.)*)Content-Type.+\n.+?\n((\n|.)*)([\-]+WebKitFormBoundary)?")
+                d1 = data1.search(f).group(3)
+                print(name)
+                print(d1)'''
+                print("aa\n")
             elif http_path.find("/test") != -1:
                 response = "Hello world from Socket running on the ESP32"
             elif http_path.find("/load_config") != -1:
@@ -87,24 +155,24 @@ def start_server():
                 config.update_config_variable(key="mode", value=mode)
                 machine.reset()
                 response = "Resetting Device."
+
             elif http_path.find("/download_update") != -1:
                 #gc.collect()
                 version = params.get("version", None)
                 print(params)
                 if version != None:
                     print("Downloading update...")
-                    _thread.start_new_thread( smac_ota.smacOTA.download_update(version=version) )
-
+                    _thread.start_new_thread( smacOTA.download_update(version=version) )
             elif http_path.find("/check_for_update") != -1:
                 #ver = smacOTA.get_update_version()
                 # try:
-                #resp = request(method="GET", url="https://smacsystem.com/download/esp32/version.json")
-                #gc.collect()
+                resp = request(method="GET", url="https://smacsystem.com/download/esp32/version.json")
+                gc.collect()
                 #print(resp)
                 dat = {}
                 #if resp.status_code == 200:
                 cur_version = config.get_config_variable(key="version")
-                #ver = resp.json()["version"]
+                VERSION = resp.json()["version"]
                 if VERSION != -1:
                     if cur_version != VERSION:
                         dat["resp_code"] = 1
@@ -142,4 +210,4 @@ def start_server():
             conn.close()
 
 #_thread.start_new_thread( start_server, () )
-#start_server()
+start_server()

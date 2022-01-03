@@ -1,5 +1,7 @@
 # smac_esp
 ESP code
 
-
-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
+# tar file creation
+tar -cf <file.tar> <folder>
+ex: tar -cf esp32.tar esp32/
+https://github.com/micropython/micropython-lib/issues/322
