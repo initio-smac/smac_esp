@@ -1,4 +1,4 @@
-from smac_device_keys import SMAC_DEVICES
+from DEVICE.smac_device_keys import SMAC_DEVICES
 import json
 
 class Config():

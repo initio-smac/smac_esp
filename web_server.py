@@ -11,7 +11,7 @@ import wifi_client
 import usocket as socket
 import machine
 import json
-from config import config
+from DEVICE.config import config
 
 
 
