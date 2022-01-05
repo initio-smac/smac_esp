@@ -43,7 +43,7 @@ elif MODE == 1:
         machine.reset()
 elif MODE == 0:
     import wifi_client
-    import start
+    import DEVICE.start
 
 #MODE = 0
 

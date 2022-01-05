@@ -13,6 +13,8 @@ from config import config
 # tar -cf <name.tar> <file1> <file2> <dir1> <dir2>
 # tar -cf esp32.tar file1
 
+SMAC_BOARD = "STD_3R_1F_ESP32"
+
 class TarExtracter:
 
     def extract(self, file):
@@ -49,28 +51,30 @@ class SmacOTA:
             utime.sleep(.5)
         led.off()
 
-    def get_update_version(self):
+    def get_update_version(self, cur_version):
         gc.collect()
         print("checking for updates...")
         FILENAME =  "version.json"
         url = self.SMAC_NEW_UPDATE_URL + FILENAME
-        #try:
-        resp = self.client.request(method="GET", url=url)
-        print(resp)
-        if resp.status_code == 200:
-            return resp.json()["version"]
+        try:
+            resp = self.client.request(method="GET", url=url)
+            print(resp)
+            if resp.status_code == 200:
+                ver =  resp.json()["version"]
+                if( ver != cur_version ):
+                    return ver
 
-        return -1
-        #except Exception as e:
-        print("Error while checking for updates", e)
-        return -1
+            return -1
+        except Exception as e:
+            print("Error while checking for updates", e)
+            return -1
 
 
 
     def download_update(self, version):
         print("downloading software2...")
         self.DOWNLOAD_COMPLETE = 0
-        FILENAME = "esp32_v{}.tar".format(version)
+        FILENAME = "{}_v{}.tar".format(SMAC_BOARD, version)
         url = self.SMAC_NEW_UPDATE_URL + FILENAME
         #_thread.start_new_thread(self.toggle_pin, (2,))
         try:

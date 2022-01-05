@@ -136,15 +136,20 @@
 
     <div class="C_version_wrapper C_block"  style="">
         <div class="C_title"> Updates and Downloads </div> <br>
-        <input type="button" value="check for updates"  id="id_check_for_update"> <br>
+        <input type="button" value="check and download updates"  id="id_check_for_update"> <br>
         <!-- <input type="button" value="download and install"  id="id_download_update" style="display:none;"> -->
         <!-- <input type="button" value="download and install"  id="id_download_update" style="display: none;"> -->
     </div><br>
 
-    <div class="C_block">
+    <div class="C_version_wrapper C_block"  style="">
+        <div class="C_title"> Factory Settings </div> <br>
+        <input type="button" value="Reset to Default Version"  id="id_reset_device"> <br>
+    </div><br>
+
+    <!-- <div class="C_block">
         <input type="file" id="id_file" accept="*">
         <input type="button" value="upload file" id="id_upload_file1" onclick="uploadFile()">
-    </div>
+    </div> -->
 
     <div class="C_block">
         <input type="checkbox" id="id_set_mode"> Restart in Same Mode
@@ -464,6 +469,13 @@
       rest_call(url="/restart", method="GET", data=data)
   };
 
+  document.getElementById("id_reset_device").onclick = function(){
+      console.log("Resetting Device");
+      data = {}
+      //data["mode"] = document.getElementById("id_set_mode").value;
+      rest_call(url="/reset_device", method="GET", data=data)
+  };
+
   document.getElementById("id_remove_topic").onclick = function(){
       var topics = [];
       var t = document.getElementsByName("sel_topic");
@@ -490,7 +502,7 @@
       id_info.innerHTML = "Checking For Updates..."
       var data = {}
       //data["version"] = DATA.version
-      rest_call(url="/check_for_update", method="GET", data=data, refresh_on_success=false)
+      rest_call(url="/check_and_download_update", method="GET", data=data, refresh_on_success=true)
       /*var url = "https://smacsystem.com/download/esp32/version.json";
       var xhttp = new XMLHttpRequest();
       xhttp.onreadystatechange = function() {

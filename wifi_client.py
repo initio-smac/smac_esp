@@ -2,7 +2,15 @@ import network
 from config import config
 #from machine import Pin
 import utime
-import wifi_ap
+#import wifi_ap
+
+'''try:
+	wlan_ap = network.WLAN(network.AP_IF)
+	wlan_ap.active(True)
+	wlan_ap.config(essid="ESP32_D2")
+	#wlan.active(True)
+except Exception as e:
+	print("wifi ap err: {}".format(e))'''
 
 #led = Pin(2, Pin.OUT, value=0)
 
@@ -57,13 +65,13 @@ try:
     if wlan.isconnected():
         print("connected")
         print( wlan.ifconfig() )
-        wifi_ap.wlan_ap.config(essid="SMAC_{}_{}".format(id_device, WIFI_NAME))
+        wlan_ap.config(essid="SMAC_{}_{}".format(id_device, WIFI_NAME))
         #led.value(1)
         #utime.sleep(1)
         #led.value(0)
         #utime.sleep(5)
     else:
-        wifi_ap.wlan_ap.config(essid="SMAC_{}_NO_CONNECTION".format(id_device))
+        wlan_ap.config(essid="SMAC_{}_NO_CONNECTION".format(id_device))
 except Exception as e:
     print("wlan station connect error: {}".format(e))
 
