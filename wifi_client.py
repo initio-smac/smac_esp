@@ -1,5 +1,7 @@
+import json
+
 import network
-from config import config
+#from config import config
 #from machine import Pin
 import utime
 #import wifi_ap
@@ -29,8 +31,8 @@ def wifi_connect(ssid, password):
         print("wifi connect  err: {}".format(e) )
         return False
         
-        
-
+f = open("wifi.json", "r").read()
+config = json.loads(f)
 try:
     wlan = network.WLAN( network.STA_IF )
     wlan.active( True )
@@ -65,13 +67,14 @@ try:
     if wlan.isconnected():
         print("connected")
         print( wlan.ifconfig() )
-        wlan_ap.config(essid="SMAC_{}_{}".format(id_device, WIFI_NAME))
+        #wlan_ap.config(essid="SMAC_{}_{}".format(id_device, WIFI_NAME))
         #led.value(1)
         #utime.sleep(1)
         #led.value(0)
         #utime.sleep(5)
     else:
-        wlan_ap.config(essid="SMAC_{}_NO_CONNECTION".format(id_device))
+        #wlan_ap.config(essid="SMAC_{}_NO_CONNECTION".format(id_device))
+        pass
 except Exception as e:
     print("wlan station connect error: {}".format(e))
 
