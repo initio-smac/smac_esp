@@ -1,4 +1,4 @@
-import gc
+#import gc
 
 import usocket, os
 
@@ -13,7 +13,7 @@ class Response:
 
         if saveToFile is not None:
             CHUNK_SIZE = 512  # bytes
-            with open(saveToFile, 'w') as outfile:
+            with open(saveToFile, 'wb') as outfile:
                 data = self._socket.read(CHUNK_SIZE)
                 while data:
                     outfile.write(data)
@@ -145,9 +145,8 @@ class HttpClient:
         except OSError:
             s.close()
             raise
-        finally:
-            gc.collect()
-            s.close()
+        #finally:
+        #    s.close()
 
         resp.status_code = status
         resp.reason = reason

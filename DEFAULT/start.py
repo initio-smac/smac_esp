@@ -1,13 +1,13 @@
 import json
 import time
 
-from smac_context import add_trigger, add_action, remove_action, remove_trigger
+from DEVICE.smac_context import add_trigger, add_action, remove_action, remove_trigger
 
 try:
     import machine
     from machine import Timer
     import uasyncio as asyncio
-    from smac_devices import SmacFan, SmacSwitch
+    from DEVICE.smac_devices import SmacFan, SmacSwitch
     import _thread
     #from smac_ota2 import smacOTA
     #import wifi_client

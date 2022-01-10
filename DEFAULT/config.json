@@ -1,17 +1,17 @@
 {
     "version": "02",
-    "mode": 0,
+    "mode": 2,
     "download_software": 0,
-    "wifi_config_2": {
-        "ssid": "Realme",
-        "password": "password"
-    },
     "wifi_config_1": {
+        "ssid": "Realme",
+        "password": "nopassword"
+    },
+    "wifi_config_2": {
         "ssid": "initioenergy_act",
         "password": "Smacsystem@6"
     },
     "ap_config": {
-        "ssid": "smac_",
+        "ssid": "SMAC_DEV",
         "password": "password"
     },
     "id_device": "D2",

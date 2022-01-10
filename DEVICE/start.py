@@ -1,13 +1,13 @@
 import json
 import time
 
-from smac_context import add_trigger, add_action, remove_action, remove_trigger
+from DEVICE.smac_context import add_trigger, add_action, remove_action, remove_trigger
 
 try:
     import machine
     from machine import Timer
     import uasyncio as asyncio
-    from smac_devices import SmacFan, SmacSwitch
+    from DEVICE.smac_devices import SmacFan, SmacSwitch
     import _thread
     #from smac_ota2 import smacOTA
     #import wifi_client
@@ -19,15 +19,15 @@ except Exception as e:
 
 
 
-from config import config
-config.load_config_variable()
+from DEVICE.config import config
+#config.load_config_variable()
 
 
-from smac_client import client
-from smac_requests import req_get_device_id
-from smac_keys import smac_keys
-from smac_platform import SMAC_PLATFORM
-from smac_device_keys import SMAC_DEVICES, SMAC_PROPERTY
+from DEVICE.smac_client import client
+from DEVICE.smac_requests import req_get_device_id
+from DEVICE.smac_keys import smac_keys
+from DEVICE.smac_platform import SMAC_PLATFORM
+from DEVICE.smac_device_keys import SMAC_DEVICES, SMAC_PROPERTY
 
 class smacInit():
     SENDING_INFO = 0
@@ -560,7 +560,7 @@ class smacInit():
             except Exception as e:
                 print("Internet Time not Set", e)
                 self.TIME_SYNC = False
-            with open("device.json", "r") as f:
+            with open("DEVICE/device.json", "r") as f:
                 try:
                     f1 = json.loads(f.read())
                     self.PROPERTY = f1

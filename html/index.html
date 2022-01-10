@@ -60,8 +60,12 @@
             height: 100%;
             padding: 0;
             margin: 0;
-            background-color: rgba(255, 255, 255, 0.5);;
+            background-color: rgba(0,0,0, 0.5);;
             position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            right: 0;
             display: none;
         }
 
@@ -87,11 +91,11 @@
 
 
 <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> -->
-<div class="C_info_wrapper">
+<div class="C_info_wrapper" id="id_loader_wrapper">
     <div id="id_loader" style=""> Loading... </div>
 </div>
 
-<div class="C_info_wrapper">
+<div class="C_info_wrapper" id="id_info_wrapper">
     <div id="id_info"> This is info </div>
 </div>
 <div class="C_main">
@@ -99,6 +103,10 @@
         Device Config
     </div>
 
+    <div class="C_block">
+        <div  class="C_title"> Version: <span id="id_version"> </span> </div>
+
+    <div> <br> <br>
 
     <div class="C_block">
         <div id="id_conn1" class="C_title"> Connection: 1 </div> <br>
@@ -112,6 +120,14 @@
         <input type="text" placeholder="wifi_ssid" id="id_wifi_ssid_2"> <br>
         <input type="text" placeholder="wifi_password" id="id_wifi_password_2"> <br>
         <input type="button" value="update"  id="id_wifi_submit_2">
+    <div> <br>
+
+
+    <div class="C_block">
+        <div id="" class="C_title"> Access Point </div> <br>
+        <input type="text" placeholder="AP ssid" id="id_ap_ssid"> <br>
+        <input type="text" placeholder="AP password" id="id_ap_password"> <br>
+        <input type="button" value="update"  id="id_ap_submit">
     <div> <br>
 
     <div class="C_block">
@@ -136,15 +152,20 @@
 
     <div class="C_version_wrapper C_block"  style="">
         <div class="C_title"> Updates and Downloads </div> <br>
-        <input type="button" value="check for updates"  id="id_check_for_update"> <br>
+        <input type="button" value="check and download updates"  id="id_check_for_update"> <br>
         <!-- <input type="button" value="download and install"  id="id_download_update" style="display:none;"> -->
         <!-- <input type="button" value="download and install"  id="id_download_update" style="display: none;"> -->
     </div><br>
 
-    <div class="C_block">
+    <div class="C_version_wrapper C_block"  style="">
+        <div class="C_title"> Factory Settings </div> <br>
+        <input type="button" value="Reset to Default Version"  id="id_reset_device"> <br>
+    </div><br>
+
+    <!-- <div class="C_block">
         <input type="file" id="id_file" accept="*">
         <input type="button" value="upload file" id="id_upload_file1" onclick="uploadFile()">
-    </div>
+    </div> -->
 
     <div class="C_block">
         <input type="checkbox" id="id_set_mode"> Restart in Same Mode
@@ -185,6 +206,18 @@
 <script>
     var DATA = {};
     var id_info = document.getElementById("id_info")
+
+    function showInfo(text) {
+        document.getElementById("id_info_wrapper").style.display = "block";
+        document.getElementById("id_info").innerHTML = text;
+    }
+
+    function hideInfo() {
+        document.getElementById("id_info_wrapper").style.display = "none";
+        document.getElementById("id_info").innerHTML = "";
+    }
+
+
    function rest_call(url, method="GET", data={}, refresh_on_success=true) {
         document.getElementById("id_loader").style.display = "block";
         if(method == "POST"){
@@ -240,39 +273,6 @@
             xhttp.setRequestHeader("Content-type", "application/json; charset=utf-8");
             xhttp.send( data  );
         }
-
-        /*$.ajax({
-            url: url,
-            type: method,
-            data: data,
-            contentType: 'application/json; charset=utf-8',
-            success: function(result) {
-                //console.log(result)
-                if( refresh_on_success ) {
-                    location.reload();
-                } else if(url == "/check_for_update") {
-                    $("#id_download_update").show()
-                    id_info.innerHTML = "New Update is available.";
-                } else {
-                    console.log(result);
-                    id_info.innerHTML = result;
-                }
-
-            },
-            error: function(xhr, status, error) {
-                 console.log(status);
-                 id_info.innerHTML = status;
-
-            },
-            beforeSend: function() {
-                 $("#id_loader").show()
-            },
-            complete: function(){
-                 $("#id_loader").hide()
-            },
-        });*/
-
-
    }
 
     var xhttp = new XMLHttpRequest();
@@ -292,6 +292,9 @@
                         conn.style.color = "green";
                         conn.innerHTML = conn.innerHTML + " ("+ strength + "%) ";
                       }
+                      document.getElementById('id_version').innerHTML = jd.version;
+                      document.getElementById('id_ap_ssid').value = jd.ap_config["ssid"];
+                      document.getElementById('id_ap_password').value = jd.ap_config["password"];
                       document.getElementById('id_wifi_ssid_1').value = jd.wifi_config_1["ssid"];
                       document.getElementById('id_wifi_password_1').value = jd.wifi_config_1["password"];
                       if( connected_ssid == jd.wifi_config_2["ssid"]) {
@@ -333,63 +336,7 @@
     document.getElementById("id_loader").style.display = "block";
     xhttp.send();
 
-   /*$.getJSON('/load_config', function(jd) {
-          console.log()
-          console.log(jd);
-          DATA = jd
-          var connected_ssid = jd["connected_ssid"]
-          var strength = jd["connected_ssid_strength"]
-          if( connected_ssid == jd.wifi_config_1["ssid"]) {
-            $("#id_conn1").css("color", "green");
-            $("#id_conn1").append(" ("+ strength + "%) ");
-          }
-          $('#id_wifi_ssid_1').val(jd.wifi_config_1["ssid"] );
-          $('#id_wifi_password_1').val(jd.wifi_config_1["password"]);
-          if( connected_ssid == jd.wifi_config_2["ssid"]) {
-            $("#id_conn2").css("color", "green");
-            $("#id_conn2").append(" ("+ strength + "%) ");
-          }
-          $('#id_wifi_ssid_2').val(jd.wifi_config_2["ssid"] );
-          $('#id_wifi_password_2').val(jd.wifi_config_2["password"]);
-          $('#id_text_name_device').val(jd.name_device);
-          $('#id_text_pin_device').val(jd.pin_device);
-
-          var topics = jd.sub_topic;
-          if(topics.length > 0) {
-              var text = "";
-              $(".C_topic_wrapper").show()
-              for (i = 0; i < topics.length; i++) {
-                   id_topic = topics[i][0]
-                   if( (id_topic != "") && (id_topic != jd.id_device) && (id_topic != "#") && (id_topic != null) ) {
-                        text += "<input type='checkbox' name='sel_topic' value='"+ id_topic +"'>" + topics[i][1] + "/" + topics[i][2] + "<br>";
-                   }
-	          }
-              $("#id_topics").append(text)
-          } else {
-            $("#id_topics").html("No homes")
-            $("#id_remove_topic").hide()
-          }
-
-          //$('#id_mqtt_addr').val(jd.mqtt_server);
-          //var versions = jd.versions
-          //if(versions.length > 0) {
-          //    var text = "";
-          //    $(".C_version_wrapper").show()
-          //    for (i = 0; i < versions.length; i++) {
-  		  // text += "<input type='radio' name='sel_version' value='"+ versions[i] +"'>" + versions[i] + "<br>";
-	      //}
-          //    $("#id_versions").append(text)
-          //}
-
-   });*/
-
-  /*document.getElementById("id_addgroup_submit").onclick = function(){
-      var group_id = document.getElementById("id_group_id").value
-      console.log(group_id);
-      var data = {}
-      data["group_id"] = group_id
-      rest_call(url="/send_group_request", method="GET", data=data)
-  };*/
+   
 
   document.getElementById("id_wifi_submit_1").onclick = function(){
       var ssid = document.getElementById("id_wifi_ssid_1").value;
@@ -398,31 +345,8 @@
       data["ssid"] = ssid
       data["password"] = password
       data["connection"] = 1
-      rest_call(url="/update_wifi", method="GET", data=data)
+      rest_call(url="/update_wifi", method="GET", data=data, refresh_on_success=true)
   };
-
-  document.getElementById("id_upload_file").onclick = function(){
-        var f = document.getElementById("id_file");  // file from input
-        var req = new XMLHttpRequest();
-        var formData = new FormData();
-        console.log(f);
-        console.log(f.files);
-        formData.append("f", f.files[0]);
-        req.open("POST", '/upload_software_file', true);
-        req.send(formData);
-  };
-
-  async function uploadFile() {
-        var fileupload = document.getElementById("id_file");
-        let formData = new FormData();
-        formData.append("file", fileupload.files[0]);
-        formData.append("version", "02");
-        await fetch('/upload_software_file', {
-          method: "POST",
-          body: formData
-        });
-        alert('The file has been uploaded successfully.');
-  }
 
   document.getElementById("id_wifi_submit_2").onclick = function(){
       var ssid = document.getElementById("id_wifi_ssid_2").value;
@@ -431,22 +355,24 @@
       data["ssid"] = ssid
       data["password"] = password
       data["connection"] = 2
-      rest_call(url="/update_wifi", method="GET", data=data)
+      rest_call(url="/update_wifi", method="GET", data=data, refresh_on_success=true)
   };
 
-  /*document.getElementById("id_mqtt_addr_submit").onclick = function(){
-      var mqtt_server = document.getElementById("id_mqtt_addr").value;
-      console.log(mqtt_server);
+  document.getElementById("id_ap_submit").onclick = function(){
+      var ssid = document.getElementById("id_ap_ssid").value;
+      var password = document.getElementById("id_ap_password").value;
       var data = {}
-      data["mqtt_server"] = mqtt_server
-      rest_call(url="/update_mqtt_server", method="GET", data=data)
-  };*/
+      data["ssid"] = ssid
+      data["password"] = password
+      rest_call(url="/update_wifi_ap", method="GET", data=data, refresh_on_success=true)
+  };
+
 
   document.getElementById("id_update_name_device").onclick = function(){
       var data = {}
       data["name_device"] = document.getElementById("id_text_name_device").value;
       console.log(data)
-      rest_call(url="/update_name_device", method="GET", data=data)
+      rest_call(url="/update_name_device", method="GET", data=data, refresh_on_success=true)
   };
 
   document.getElementById("id_update_pin_device").onclick =function(){
@@ -459,9 +385,19 @@
 
   document.getElementById("id_restart").onclick = function(){
       console.log("restarting...");
+      showInfo("Restarting Device...")
       data = {}
       data["mode"] = document.getElementById("id_set_mode").value;
-      rest_call(url="/restart", method="GET", data=data)
+      rest_call(url="/restart", method="GET", data=data, refresh_on_success=true)
+  };
+
+  document.getElementById("id_reset_device").onclick = function(){
+      console.log("Resetting Device");
+      showInfo("Resetting Device...")
+      //document.getElementById("id_info_wrapper").style.display = "block";
+      data = {}
+      //data["mode"] = document.getElementById("id_set_mode").value;
+      rest_call(url="/reset_device", method="GET", data=data)
   };
 
   document.getElementById("id_remove_topic").onclick = function(){
@@ -474,7 +410,8 @@
       };
       //console.log(topics)
       if(topics.length == 0) {
-            id_info.innerHTML = "Select a Home to Remove"
+            //id_info.innerHTML = "Select a Home to Remove"
+            alert("Select a Home to Remove")
       } else{
         //console.log(topics);
         //console.log(topics.values());
@@ -487,10 +424,10 @@
 
   document.getElementById("id_check_for_update").onclick = function(){
       //console.log("checking for updates");
-      id_info.innerHTML = "Checking For Updates..."
+      showInfo("Checking For Updates...")
       var data = {}
       //data["version"] = DATA.version
-      rest_call(url="/check_for_update", method="GET", data=data, refresh_on_success=false)
+      rest_call(url="/check_and_download_update", method="GET", data=data, refresh_on_success=true)
       /*var url = "https://smacsystem.com/download/esp32/version.json";
       var xhttp = new XMLHttpRequest();
       xhttp.onreadystatechange = function() {

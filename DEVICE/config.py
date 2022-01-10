@@ -24,7 +24,7 @@ class Config():
 
     def load_config_variable(self):
         try:
-            with open('config.json', "r") as c:
+            with open('DEVICE/config.json', "r") as c:
                 config = json.load(c)
                 self.WIFI_CONFIG_1 = config['wifi_config_1']
                 self.WIFI_CONFIG_2 = config['wifi_config_2']
@@ -51,7 +51,7 @@ class Config():
 
     def get_config_variable(self, key):
         try:
-            with open('config.json', "r") as c1:
+            with open('DEVICE/config.json', "r") as c1:
                 config = json.load(c1)
                 c1.close()
                 return config.get(key, None)
@@ -63,11 +63,11 @@ class Config():
     def update_config_variable(self, key, value, arr_op="ADD", reload_variables=False):
         try:
             config = {}
-            with open('config.json', "r") as c1:
+            with open('DEVICE/config.json', "r") as c1:
                 config = json.load(c1)
                 c1.close()
 
-            with open('config.json', "w") as c2:
+            with open('DEVICE/config.json', "w") as c2:
                 d = config.copy()
                 #print(d)
                 if (key == "sub_topic") and (arr_op == "ADD"):
@@ -90,11 +90,11 @@ class Config():
     def delete_config_variable(self, key):
         try:
             config = {}
-            with open('config.json', "r") as c1:
+            with open('DEVICE/config.json', "r") as c1:
                 config = json.load(c1)
                 c1.close()
 
-            with open('config.json', "w") as c2:
+            with open('DEVICE/config.json', "w") as c2:
                 d = config.copy()
                 if key in config.keys():
                     del d[key]
@@ -106,11 +106,11 @@ class Config():
     def update_name_property(self, id_property, name_property):
         try:
             props = {}
-            with open('device.json', "r") as c1:
+            with open('DEVICE/device.json', "r") as c1:
                 props = json.load(c1)
                 c1.close()
 
-            with open('device.json', "w") as c2:
+            with open('DEVICE/device.json', "w") as c2:
                 d = props.copy()
                 for num, prop in enumerate(d):
                     if prop["id_property"] == id_property:
@@ -122,13 +122,13 @@ class Config():
 
     def add_action(self, id_topic, id_context, id_device, id_property, value):
         try:
-            with open('action.json', "r") as a1:
+            with open('DEVICE/action.json', "r") as a1:
                 actions = json.load(a1)
                 a1.close()
 
             id_act = "{}:{}:{}:{}".format(id_topic, id_context, id_device, id_property)
             #if id_act not in actions.keys():
-            with open('action.json', "w") as c2:
+            with open('DEVICE/action.json', "w") as c2:
                     d = actions.copy()
                     d[id_act] = value
                     c2.write(json.dumps(d))
@@ -138,7 +138,7 @@ class Config():
 
     def get_action(self, id_topic, id_context, id_device, id_property):
         try:
-            with open('action.json', "r") as c1:
+            with open('DEVICE/action.json', "r") as c1:
                 actions = json.load(c1)
                 id_act = "{}:{}:{}:{}".format(id_topic, id_context, id_device, id_property)
                 c1.close()
@@ -151,13 +151,13 @@ class Config():
 
     def remove_action(self, id_topic, id_context, id_device, id_property):
         try:
-            with open('action.json', "r") as c1:
+            with open('DEVICE/action.json', "r") as c1:
                 actions = json.load(c1)
                 id_act = "{}:{}:{}:{}".format(id_topic, id_context, id_device, id_property)
                 c1.close()
                 if id_act in actions.keys():
                     del actions[id_act]
-            with open('action.json', 'w') as c2:
+            with open('DEVICE/action.json', 'w') as c2:
                 c2.write(json.dumps(actions))
                 c2.close()
                 return 1
@@ -167,7 +167,7 @@ class Config():
 
     def get_action_all(self):
         try:
-            with open('action.json', "r") as c1:
+            with open('DEVICE/action.json', "r") as c1:
                 actions = json.load(c1)
                 c1.close()
                 return actions
@@ -177,12 +177,12 @@ class Config():
 
     def add_trigger(self, id_topic, id_context, id_device, id_property, type_trigger, value):
         try:
-            with open('trigger.json', "r") as a1:
+            with open('DEVICE/trigger.json', "r") as a1:
                 triggers = json.load(a1)
                 a1.close()
 
             id_trig = "{}:{}:{}:{}:{}".format(id_topic, id_context, id_device, id_property, type_trigger)
-            with open('trigger.json', "w") as c2:
+            with open('DEVICE/trigger.json', "w") as c2:
                 d = triggers.copy()
                 d[id_trig] = value
                 c2.write(json.dumps(d))
@@ -192,7 +192,7 @@ class Config():
 
     def get_trigger(self, id_topic, id_context, id_device, id_property, type_trigger):
         try:
-            with open('trigger.json', "r") as c1:
+            with open('DEVICE/trigger.json', "r") as c1:
                 triggers = json.load(c1)
                 id_trig = "{}:{}:{}:{}:{}".format(id_topic, id_context, id_device, id_property, type_trigger)
                 c1.close()
@@ -205,13 +205,13 @@ class Config():
 
     def remove_trigger(self, id_topic, id_context, id_device, id_property, type_trigger):
         try:
-            with open('trigger.json', "r") as c1:
+            with open('DEVICE/trigger.json', "r") as c1:
                 triggers = json.load(c1)
                 id_trig = "{}:{}:{}:{}:{}".format(id_topic, id_context, id_device, id_property, type_trigger)
                 c1.close()
                 if id_trig in triggers.keys():
                     del triggers[id_trig]
-            with open('trigger.json', 'w') as c2:
+            with open('DEVICE/trigger.json', 'w') as c2:
                 c2.write(json.dumps(triggers))
                 c2.close()
                 return 1
@@ -221,7 +221,7 @@ class Config():
 
     def get_trigger_all(self):
         #try:
-            with open('trigger.json', "r") as c1:
+            with open('DEVICE/trigger.json', "r") as c1:
                 triggers = json.load(c1)
                 c1.close()
                 return triggers

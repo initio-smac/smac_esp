@@ -8,6 +8,7 @@ MODE = 2
 if MODE == 2:
     import wifi_ap
     import wifi_client
+    wifi_client.init(setup_AP=True)
     import web_server
     '''from urequests import request
     resp = request(method="GET", url="https://smacsystem.com/download/esp32/version.json")
@@ -15,6 +16,7 @@ if MODE == 2:
     print(resp.json())'''
 elif MODE == 1:
     import wifi_client
+    wifi_client.init()
     from smac_ota import smacOTA
     print("Checking For Updates")
     cur_version = config.get_config_variable(key="version")
@@ -26,8 +28,10 @@ elif MODE == 1:
     else:
         print("No Updates Available")
         config.update_config_variable(key="mode", value=0)
-        import machine
-        machine.reset()
+        #import machine
+        #machine.reset()
 elif MODE == 0:
+    import wifi_ap
     import wifi_client
+    wifi_client.init(setup_AP=True)
     import DEVICE.start

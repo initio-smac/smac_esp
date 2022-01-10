@@ -3,10 +3,10 @@ import socket
 import json
 import time
 
-from zmq_iface import smac_zmq
-from smac_platform import SMAC_PLATFORM
-from smac_device_keys import SMAC_DEVICES
-from smac_keys import smac_keys
+from DEVICE.zmq_iface import smac_zmq
+from DEVICE.smac_platform import SMAC_PLATFORM
+from DEVICE.smac_device_keys import SMAC_DEVICES
+from DEVICE.smac_keys import smac_keys
 
 if SMAC_PLATFORM == "ESP":
     import uasyncio as asyncio

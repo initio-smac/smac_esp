@@ -33,11 +33,8 @@ def copy_folder(COPY_FROM="DEFAULT", COPY_TO="DEVICE"):
     TYPE_FILE = 32768
     TYPE_DIR = 16384
     import uos as os
-    try:
-        os.rmdir(COPY_TO)
-    except:
-        pass
-    os.mkdir(COPY_TO)
+    #os.rmdir(COPY_TO)
+    #os.mkdir(COPY_TO)
     for i in os.ilistdir(COPY_FROM):
         name = i[0]
         typ = i[1]
@@ -47,9 +44,13 @@ def copy_folder(COPY_FROM="DEFAULT", COPY_TO="DEVICE"):
             copy_folder( COPY_FROM+"/"+name, COPY_TO+"/"+name )
         if typ == TYPE_FILE:
             print("copying file {} from {} to {}".format(name, COPY_FROM, COPY_TO))
-            f = open(COPY_TO + "/" + name, "rb")
-            with open("DEVICE/" + name, "wb") as f1:
-                f1.write(f.read())
+            f = open(COPY_FROM + "/" + name, "rb")
+            with open(COPY_TO +"/"+ name, "wb") as f1:
+                while True:
+                    b = f.read(1024)
+                    if b == b"":
+                        break
+                    f1.write(b)
                 f1.close()
             f.close()
 
@@ -166,7 +167,7 @@ def start_server():
             elif http_path.find("/test") != -1:
                 response = "Hello world from Socket running on the ESP32"
             elif http_path.find("/load_config") != -1:
-                con = open("config.json", "r").read()
+                con = open("DEVICE/config.json", "r").read()
                 rssi = wifi_client.wlan.status('rssi')
                 c = json.loads(con)
                 c["connected_ssid"] = wifi_client.wlan.config('essid')
@@ -178,6 +179,10 @@ def start_server():
                 key_ = "wifi_config_1" if (conn1 == '1') else "wifi_config_2"
                 config.update_config_variable(key=key_, value=params)
                 response = "Wifi config updated successfully"
+            elif http_path.find("/update_wifi_ap") != -1:
+                print("update wifi Access Point")
+                config.update_config_variable(key="ap_config", value=params)
+                response = "Wifi Access Point config updated successfully"
             elif http_path.find("/update_name_device") != -1:
                 config.update_config_variable(key="name_device", value=params["name_device"])
                 response = "Device Name Updated Successfully."
@@ -194,7 +199,7 @@ def start_server():
                 mode = params.get("mode", 0)
                 config.update_config_variable(key="mode", value=mode)
                 machine.reset()
-                response = "Resetting Device."
+                response = "Restarting Device."
 
             elif http_path.find("/download_update") != -1:
                 #gc.collect()
@@ -212,7 +217,9 @@ def start_server():
             elif http_path.find("/reset_device") != -1:
                 print("Resetting to Default Version...")
                 copy_folder(COPY_FROM="DEFAULT", COPY_TO="DEVICE")
-
+                config.update_config_variable(key="mode", value=2)
+                #machine.reset()
+                response = "Device Reset Completed"
 
             elif http_path.find("/check_for_update") != -1:
                 #ver = smacOTA.get_update_version()

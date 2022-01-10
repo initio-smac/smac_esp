@@ -1,7 +1,7 @@
-from config import config
+from DEVICE.config import config
 import json
 
-from smac_client import client
+from DEVICE.smac_client import client
 
 try:
     import urequests

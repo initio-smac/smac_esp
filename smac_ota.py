@@ -7,7 +7,7 @@ from http_client import HttpClient
 import utime
 import utarfile
 import uos
-from config import config
+from DEVICE.config import config
 
 # tar creation
 # tar -cf <name.tar> <file1> <file2> <dir1> <dir2>
@@ -24,12 +24,12 @@ class TarExtracter:
             if i.type == utarfile.DIRTYPE:
                 if i.name[-1] == "/":
                     try:
-                        uos.mkdir(i.name[:-1])
+                        uos.mkdir("DEVICE/" + i.name[:-1])
                     except Exception as e:
                         print(e)
             else:
                 f = t.extractfile(i)
-                with open(i.name, "wb") as f1:
+                with open("DEVICE/" + i.name, "wb") as f1:
                     f1.write(f.read())
         uos.remove(file)
         gc.collect()
@@ -56,18 +56,25 @@ class SmacOTA:
         print("checking for updates...")
         FILENAME =  "version.json"
         url = self.SMAC_NEW_UPDATE_URL + FILENAME
-        try:
-            resp = self.client.request(method="GET", url=url)
-            print(resp)
-            if resp.status_code == 200:
-                ver =  resp.json()["version"]
-                if( ver != cur_version ):
-                    return ver
+        #try:
+        resp = self.client.request(method="GET", url=url)
+        #resp = request(method="GET", url=url)
+        status = resp.status_code
+        dat = resp.json()
+        print(status)
+        print(resp.reason)
+        print(dat)
+        if resp.status_code == 200:
+            ver =  int(dat["version"])
+            print(ver)
+            print(int(cur_version))
+            if( ver > int(cur_version) ):
+                return dat["version"]
 
-            return -1
-        except Exception as e:
-            print("Error while checking for updates", e)
-            return -1
+        return -1
+        #except Exception as e:
+        print("Error while checking for updates", e)
+        return -1
 
 
 
@@ -75,7 +82,9 @@ class SmacOTA:
         print("downloading software2...")
         self.DOWNLOAD_COMPLETE = 0
         FILENAME = "{}_v{}.tar".format(SMAC_BOARD, version)
+        print(FILENAME)
         url = self.SMAC_NEW_UPDATE_URL + FILENAME
+        print(url)
         #_thread.start_new_thread(self.toggle_pin, (2,))
         try:
             resp = self.client.request(method="GET", url=url, saveToFile=FILENAME)

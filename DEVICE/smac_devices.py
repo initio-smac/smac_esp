@@ -1,7 +1,7 @@
 import time
 
-from config import config
-from debounce import DebouncedSwitch
+from DEVICE.config import config
+from DEVICE.debounce import DebouncedSwitch
 from machine import Pin
 
 

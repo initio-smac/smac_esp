@@ -99,6 +99,10 @@
         Device Config
     </div>
 
+    <div class="C_block">
+        <div  class="C_title"> Version: <span id="id_version"> </span> </div>
+
+    <div> <br> <br>
 
     <div class="C_block">
         <div id="id_conn1" class="C_title"> Connection: 1 </div> <br>
@@ -297,6 +301,7 @@
                         conn.style.color = "green";
                         conn.innerHTML = conn.innerHTML + " ("+ strength + "%) ";
                       }
+                      document.getElementById('id_version').innerHTML = jd.version;
                       document.getElementById('id_wifi_ssid_1').value = jd.wifi_config_1["ssid"];
                       document.getElementById('id_wifi_password_1').value = jd.wifi_config_1["password"];
                       if( connected_ssid == jd.wifi_config_2["ssid"]) {
@@ -406,7 +411,7 @@
       rest_call(url="/update_wifi", method="GET", data=data)
   };
 
-  document.getElementById("id_upload_file").onclick = function(){
+  /*document.getElementById("id_upload_file").onclick = function(){
         var f = document.getElementById("id_file");  // file from input
         var req = new XMLHttpRequest();
         var formData = new FormData();
@@ -427,7 +432,7 @@
           body: formData
         });
         alert('The file has been uploaded successfully.');
-  }
+  }/*
 
   document.getElementById("id_wifi_submit_2").onclick = function(){
       var ssid = document.getElementById("id_wifi_ssid_2").value;
@@ -486,7 +491,8 @@
       };
       //console.log(topics)
       if(topics.length == 0) {
-            id_info.innerHTML = "Select a Home to Remove"
+            //id_info.innerHTML = "Select a Home to Remove"
+            alert("Select a Home to")
       } else{
         //console.log(topics);
         //console.log(topics.values());

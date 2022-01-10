@@ -1,4 +1,4 @@
-from config import config
+from DEVICE.config import config
 config.load_config_variable()
 
 # wifi AP

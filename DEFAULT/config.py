@@ -1,4 +1,4 @@
-from smac_device_keys import SMAC_DEVICES
+from DEVICE.smac_device_keys import SMAC_DEVICES
 import json
 
 class Config():
@@ -24,7 +24,7 @@ class Config():
 
     def load_config_variable(self):
         try:
-            with open('config.json', "r") as c:
+            with open('DEVICE/config.json', "r") as c:
                 config = json.load(c)
                 self.WIFI_CONFIG_1 = config['wifi_config_1']
                 self.WIFI_CONFIG_2 = config['wifi_config_2']
@@ -51,7 +51,7 @@ class Config():
 
     def get_config_variable(self, key):
         try:
-            with open('config.json', "r") as c1:
+            with open('DEVICE/config.json', "r") as c1:
                 config = json.load(c1)
                 c1.close()
                 return config.get(key, None)
@@ -63,11 +63,11 @@ class Config():
     def update_config_variable(self, key, value, arr_op="ADD", reload_variables=False):
         try:
             config = {}
-            with open('config.json', "r") as c1:
+            with open('DEVICE/config.json', "r") as c1:
                 config = json.load(c1)
                 c1.close()
 
-            with open('config.json', "w") as c2:
+            with open('DEVICE/config.json', "w") as c2:
                 d = config.copy()
                 #print(d)
                 if (key == "sub_topic") and (arr_op == "ADD"):
@@ -90,11 +90,11 @@ class Config():
     def delete_config_variable(self, key):
         try:
             config = {}
-            with open('config.json', "r") as c1:
+            with open('DEVICE/config.json', "r") as c1:
                 config = json.load(c1)
                 c1.close()
 
-            with open('config.json', "w") as c2:
+            with open('DEVICE/config.json', "w") as c2:
                 d = config.copy()
                 if key in config.keys():
                     del d[key]

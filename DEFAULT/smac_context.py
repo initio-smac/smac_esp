@@ -1,6 +1,6 @@
-from config import config
-from smac_client import client
-from smac_keys import smac_keys
+from DEVICE.config import config
+from DEVICE.smac_client import client
+from DEVICE.smac_keys import smac_keys
 
 
 def add_action(data, frm):
