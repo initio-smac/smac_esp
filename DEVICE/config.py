@@ -77,6 +77,12 @@ class Config():
                     for topic in d[key]:
                         if value == topic[0]:
                             d[key].remove(topic)
+                elif (key == "blocked_topic") and (arr_op == "ADD"):
+                    if not (value in d[key]):
+                        d[key] = d[key] + [value]
+                elif (key == "blocked_topic") and (arr_op == "REM"):
+                    if value in d[key]:
+                        d[key].remove(value)
                 else:
                     d[key] = value
                 #print(d)
@@ -220,13 +226,53 @@ class Config():
             return 0
 
     def get_trigger_all(self):
-        #try:
+        try:
             with open('DEVICE/trigger.json', "r") as c1:
                 triggers = json.load(c1)
                 c1.close()
                 return triggers
-        #except Exception as e:
-            #print("get trigger all err:{}".format(e) )
-            #return {}
+        except Exception as e:
+            print("get trigger all err:{}".format(e) )
+            return {}
+
+    def update_topic_msg_count(self, id_topic):
+        try:
+            with open('DEVICE/topic_msg_count.json', "r") as c1:
+                config = json.load(c1)
+                c1.close()
+
+            with open('DEVICE/topic_msg_count.json', "w") as c2:
+                d = config.copy()
+                print("d.get(id_topic), ", d.get(id_topic))
+                count = 1 if( d.get(id_topic) == None ) else d.get(id_topic)+1
+                d[id_topic] = count
+                c2.write(json.dumps(d))
+                c2.close()
+        except Exception as e:
+            print("update topic_msg_count err: {}".format(e))
+
+    def delete_topic_msg_count(self, id_topic):
+        try:
+            with open('DEVICE/topic_msg_count.json', "r") as c1:
+                config = json.load(c1)
+                c1.close()
+
+            with open('DEVICE/topic_msg_count.json', "w") as c2:
+                d = config.copy()
+                del d[id_topic]
+                c2.write(json.dumps(d))
+                c2.close()
+        except Exception as e:
+            print("update topic_msg_count err: {}".format(e))
+
+    def get_topic_msg_count_all(self):
+        try:
+            with open('DEVICE/topic_msg_count.json', "r") as c1:
+                counts = json.load(c1)
+                c1.close()
+                return counts
+        except Exception as e:
+            print("get topic_msg_count all err:{}".format(e) )
+            return {}
 
 config = Config()

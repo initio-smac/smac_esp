@@ -200,7 +200,10 @@ def start_server():
                 config.update_config_variable(key="mode", value=mode)
                 machine.reset()
                 response = "Restarting Device."
-
+            elif http_path.find("/update_input_type") != -1:
+                ip_type = params.get("input_type", "switch")
+                config.update_config_variable(key="input_type", value=ip_type)
+                response = "Input Type Updated."
             elif http_path.find("/download_update") != -1:
                 #gc.collect()
                 version = params.get("version", None)

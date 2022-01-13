@@ -1,10 +1,20 @@
+import time
+
 from DEVICE.config import config
 config.load_config_variable()
+
+def set_internet_time():
+    try:
+        import ntptime
+        ntptime.settime()
+        print(time.localtime())
+    except:
+        pass
 
 # run functions
 MODE = config.MODE
 print("MODE", MODE)
-MODE = 2
+MODE = 0
 if MODE == 2:
     import wifi_ap
     import wifi_client
@@ -34,4 +44,5 @@ elif MODE == 0:
     import wifi_ap
     import wifi_client
     wifi_client.init(setup_AP=True)
+    #set_internet_time()
     import DEVICE.start

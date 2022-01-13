@@ -19,6 +19,7 @@ else:
 
 class SMACClient():
     SUB_TOPIC = []
+    BLOCKED_LIST = []
     UDP_PORT = 37020
     UDP_REQ = []
     ZMQ_PUB_PORT = 5556
@@ -101,6 +102,15 @@ class SMACClient():
         #self.udp_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         #self.udp_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.udp_sock.bind(("",self.UDP_PORT))
+
+    def block_topic(self, id_topic):
+        self.BLOCKED_LIST.append(id_topic)
+
+    def unblock_topic(self, id_topic):
+        try:
+            self.BLOCKED_LIST.remove(id_topic)
+        except:
+            pass
 
     # subscribe to a topic
     def subscribe(self, topic):
@@ -348,7 +358,7 @@ class SMACClient():
                     #print(topic)
                     #print(self.SUB_TOPIC)
                     #print(topic in self.SUB_TOPIC)
-                    if topic in self.SUB_TOPIC:
+                    if (topic in self.SUB_TOPIC) and (topic not in self.BLOCKED_LIST):
                         try:
                             self.process_message(topic, msg, "UDP")
                         except:
@@ -369,11 +379,11 @@ class SMACClient():
             await asyncio.sleep(0)
             for num, message in enumerate(self.ZMQ_REQ):
                 try:
-                    print("zmq_message: [{}]".format(message))
+                    print("zmq_message: {}".format(message))
                     d = message.split(" ", 1)
                     topic = d[0]
                     msg = d[1]
-                    if topic in self.SUB_TOPIC:
+                    if (topic in self.SUB_TOPIC) and (topic not in self.BLOCKED_LIST):
                         if "SPEED_TEST" in msg:
                             text,START_TIME, PKT_ID = msg.split(":")
                             if int(PKT_ID) == self.SPD_TEST_PKT_ID:
@@ -411,6 +421,7 @@ class SMACClient():
                 self.UDP_REQ.append(d)
             except:
                 pass
+                #self.UDP_REQ = []
             await asyncio.sleep(0)
 
     # wait for messages on ZMQ port and append to self.ZMQ_REQ
@@ -448,6 +459,7 @@ class SMACClient():
                     await asyncio.sleep(0)
             except Exception as e:
                 print("listen zmq err: {}".format(e) )
+                #self.ZMQ_REQ = []
             await asyncio.sleep(0)
 
    

@@ -103,14 +103,14 @@ class Delay_ms:
         self._running = False  # timer is stopped
 
 class Switch:
-    debounce_ms = 50
+    debounce_ms = 100
     def __init__(self, pin):
         self.pin = pin # Should be initialised for input with pullup
         self._open_func = False
         self._close_func = False
         self.switchstate = self.pin.value()  # Get initial state
-        loop = asyncio.get_event_loop()
-        loop.create_task(self.switchcheck())  # Thread runs forever
+        asyncio.create_task(self.switchcheck())  # Thread runs forever
+        #print("loop created")
 
     def open_func(self, func, args=()):
         self._open_func = func
@@ -125,9 +125,9 @@ class Switch:
         return self.switchstate
 
     async def switchcheck(self):
+        #print("switch check")
         while True:
             state = self.pin.value()
-            print(state)
             if state != self.switchstate:
                 # State has changed: act on it now.
                 self.switchstate = state
@@ -136,13 +136,14 @@ class Switch:
                 elif state == 1 and self._open_func:
                     launch(self._open_func, self._open_args)
             # Ignore further state changes until switch has settled
+            # See https://github.com/peterhinch/micropython-async/issues/69
             await asyncio.sleep_ms(Switch.debounce_ms)
 
 # An alternative Pushbutton solution with lower RAM use is available here
 # https://github.com/kevinkk525/pysmartnode/blob/dev/pysmartnode/utils/abutton.py
 class Pushbutton:
-    debounce_ms = 50
-    long_press_ms = 1000
+    debounce_ms = 100
+    long_press_ms = 5000
     double_click_ms = 400
     def __init__(self, pin, suppress=False):
         self.pin = pin # Initialise for input

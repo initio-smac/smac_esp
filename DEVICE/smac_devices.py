@@ -1,7 +1,7 @@
 import time
 
 from DEVICE.config import config
-from DEVICE.debounce import DebouncedSwitch
+from debounce import Switch, Pushbutton
 from machine import Pin
 
 
@@ -20,7 +20,13 @@ class SmacSwitch:
 			ip = Pin(int(input_pin), Pin.IN)
 			#ip.irq(handler=self.handle_ip_change)
 			#self.input_pin = ip
-			self.input_pin =  DebouncedSwitch(ip, self.handle_ip_change )
+			ip_type = config.get_config_variable("input_type")
+			if( ip_type == "pushbutton" ):
+				self.input_pin = Pushbutton(ip)
+				self.input_pin.release_func(self.handle_ip_change, ())
+			else:
+				self.input_pin = Switch(ip)
+				self.input_pin.open_func(self.handle_ip_change, ())
 
 		self.output = Pin( int(output), Pin.OUT)
 		print("op_indicator: {}".format( op_indicator) )
@@ -88,7 +94,14 @@ class SmacFan:
 			ip = Pin(int(input_pin), Pin.IN)
 			#ip.irq(handler=self.handle_ip_change_fan)
 			#self.input_pin = ip
-			self.input_pin =  DebouncedSwitch(ip, self.handle_ip_change_fan )
+			#self.input_pin =  DebouncedSwitch(ip, self.handle_ip_change_fan )
+			ip_type = config.get_config_variable("input_type")
+			if (ip_type == "pushbutton"):
+				self.input_pin = Pushbutton(ip)
+				self.input_pin.release_func(self.handle_ip_change_fan, ())
+			else:
+				self.input_pin = Switch(ip)
+				self.input_pin.open_func(self.handle_ip_change_fan, ())
 
 		if len(output) < 3:
 			raise Exception("Three Pins are required for Fan output. Only {} pins are given.".format(len(output)) )

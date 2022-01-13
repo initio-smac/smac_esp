@@ -105,7 +105,15 @@
 
     <div class="C_block">
         <div  class="C_title"> Version: <span id="id_version"> </span> </div>
+    <div> <br> <br>
 
+    <div class="C_block">
+        <div  class="C_title"> Select Input Type:</div>
+        <div>
+            <input type="radio" name="sel_input" value="switch" id="id_ip_sel_switch"> Switch <br>
+            <input type="radio" name="sel_input" value="pushbutton" id="id_ip_sel_pushbtn"> Push Button <br>
+            <input type="button" value="update"  id="id_select_input_type">
+        </div>
     <div> <br> <br>
 
     <div class="C_block">
@@ -307,6 +315,20 @@
                       document.getElementById('id_text_name_device').value = jd.name_device;
                       document.getElementById('id_text_pin_device').value = jd.pin_device;
 
+                      if(jd.hasOwnProperty('input_type')){
+                            var ip_type = jd["input_type"]
+                            if(ip_type == "switch") {
+                                document.getElementById('id_ip_sel_switch').checked = true;
+                            } else if(ip_type == "pushbutton") {
+                                document.getElementById('id_ip_sel_pushbtn').checked = true;
+                            } else {
+                                document.getElementById('id_ip_sel_switch').checked = true;
+                            }
+                      } else {
+                        document.getElementById('id_ip_sel_switch').checked = true;
+                        //document.getElementById('id_ip_sel_pushbtn').checked = false;
+                      }
+
                       var topics = jd.sub_topic;
                       if(topics.length > 0) {
                           var text = "";
@@ -365,6 +387,18 @@
       data["ssid"] = ssid
       data["password"] = password
       rest_call(url="/update_wifi_ap", method="GET", data=data, refresh_on_success=true)
+  };
+
+  document.getElementById("id_select_input_type").onclick = function(){
+     var ip_type = "switch";
+     if(document.getElementById('id_ip_sel_switch').checked) {
+         ip_type = "switch";
+     }else if(document.getElementById('id_ip_sel_pushbtn').checked) {
+         ip_type = "pushbutton";
+     }
+      var data = {}
+      data["input_type"] = ip_type
+      rest_call(url="/update_input_type", method="GET", data=data, refresh_on_success=true)
   };
 
 
