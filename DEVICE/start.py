@@ -5,7 +5,7 @@ from DEVICE.smac_context import add_trigger, add_action, remove_action, remove_t
 
 try:
     import machine
-    from machine import Timer
+    #from machine import Timer
     import uasyncio as asyncio
     from DEVICE.smac_devices import SmacFan, SmacSwitch
     import _thread
@@ -32,6 +32,7 @@ from DEVICE.smac_device_keys import SMAC_DEVICES, SMAC_PROPERTY
 class smacInit():
     SENDING_INFO = 0
     TIME_SYNC = False
+    RESET_BUTTON = 35
 
 
     def send_test(self, *args):
@@ -78,7 +79,7 @@ class smacInit():
                 m[ smac_keys["TYPE_DEVICE"]] = config.TYPE_DEVICE
                 m[ smac_keys["ID_DEVICE"]] = config.ID_DEVICE
                 print(m)
-                client.send_message(frm=config.ID_DEVICE, to=dest_topic, cmd=smac_keys["CMD_SEND_INFO"], message=m, udp=True, tcp=False)
+                client.send_message(frm=config.ID_DEVICE, to=dest_topic, cmd=smac_keys["CMD_SEND_INFO"], message=m, udp=True, tcp=True)
                 print("sent {}".format(t))
         print("send topics")
 
@@ -93,7 +94,7 @@ class smacInit():
             p1[ smac_keys["VALUE"]] = p["value"]
             p1[ smac_keys["VALUE_MIN"]] = p["value_min"]
             p1[ smac_keys["VALUE_MAX"]] = p["value_max"]
-            client.send_message(frm=config.ID_DEVICE, to=dest_topic, cmd=smac_keys["CMD_SEND_INFO"], message=p1, udp=True, tcp=False)
+            client.send_message(frm=config.ID_DEVICE, to=dest_topic, cmd=smac_keys["CMD_SEND_INFO"], message=p1, udp=True, tcp=True)
         print("send property")
 
         self.SENDING_INFO = 0
@@ -101,7 +102,7 @@ class smacInit():
         #                    udp=True, tcp=False)
 
 
-    def add_topic(self, frm, id_topic, name_home, name_topic, id_device, passkey, *args):
+    def add_topic(self, frm, id_topic, name_home, name_topic, id_device, passkey, id_message, *args):
         print("len SUB_TOPIC", len(config.SUB_TOPIC))
         print(config.LIMIT)
         print(config.get_config_variable(key="limit_topic"))
@@ -112,11 +113,13 @@ class smacInit():
                 client.subscribe(id_topic)
                 d = {}
                 d[ smac_keys["ID_TOPIC"] ] = id_topic
+                d[ smac_keys["ID_DEVICE"] ] = config.ID_DEVICE
                 d[ smac_keys["NAME_DEVICE"]] = config.NAME_DEVICE
                 d[ smac_keys["TYPE_DEVICE"]] = config.TYPE_DEVICE
                 d[ smac_keys["NAME_HOME"]] = name_home
                 d[ smac_keys["NAME_TOPIC"]] = name_topic
-                client.send_message(frm=config.ID_DEVICE, to="#", cmd=smac_keys["CMD_STATUS_ADD_TOPIC"], message=d, udp=True, tcp=False)
+                d[ smac_keys["ID_MESSAGE"]] = id_message
+                client.send_message(frm=config.ID_DEVICE, to="#", cmd=smac_keys["CMD_STATUS_ADD_TOPIC"], message=d, udp=True, tcp=True)
                 # sending ACK
                 d1 = {}
                 d1[ smac_keys["MESSAGE"] ] = "Topic subscribed successfylly"
@@ -125,25 +128,27 @@ class smacInit():
                 d1 = {}
                 d1[smac_keys["MESSAGE"]] = "Topic '{}' not subscribed".format(id_topic)
                 d1[smac_keys["ID_DEVICE"]] = id_device
+                d1[smac_keys["ID_MESSAGE"]] = id_message
                 d1[smac_keys["ID_TOPIC"]] = id_topic
                 print("Cannot subscribe to {}. Passkey error.".format(id_topic))
                 if config.ID_DEVICE == frm:
                     print("same device")
                 else:
-                    client.send_message(frm=config.ID_DEVICE, to=frm, cmd=smac_keys["CMD_INVALID_PIN"], message=d1, udp=True, tcp=False)
+                    client.send_message(frm=config.ID_DEVICE, to=frm, cmd=smac_keys["CMD_INVALID_PIN"], message=d1, udp=True, tcp=True)
                     #client.send_message(frm=config.ID_DEVICE, to=id_topic, cmd=smac_keys["CMD_INVALID_PIN"], message=d1)
         else:
             d1 = {}
             d1[smac_keys["MESSAGE"]] = "Topic '{}/{}' not subscribed. Topic Limit Reached.".format(name_home, name_topic)
             d1[smac_keys["ID_DEVICE"]] = id_device
             d1[smac_keys["ID_TOPIC"]] = id_topic
+            d1[smac_keys["ID_MESSAGE"]] = id_message
             print("Cannot subscribe to {}. Topic Limit Reached.".format(id_topic))
             if config.ID_DEVICE == frm:
                 print("same device")
             else:
                 client.send_message(frm=config.ID_DEVICE, to=frm, cmd=smac_keys["CMD_TOPIC_LIMIT_EXCEEDED"], message=d1)
 
-    def delete_topic(self, frm, id_topic, id_device, passkey, *args):
+    def delete_topic(self, frm, id_topic, id_device, passkey, id_message, *args):
         print(passkey)
         print(config.PIN_DEVICE)
         print(passkey == config.PIN_DEVICE)
@@ -157,9 +162,11 @@ class smacInit():
             #self.delete_topic_widget(id_topic)
             d = {}
             d[ smac_keys["ID_TOPIC"] ] = id_topic
+            d[ smac_keys["ID_DEVICE"] ] = config.ID_DEVICE
+            d[ smac_keys["ID_MESSAGE"]] = id_message
             d[ smac_keys["NAME_DEVICE"]] = config.NAME_DEVICE
             d[ smac_keys["TYPE_DEVICE"]] = config.TYPE_DEVICE
-            client.send_message(frm=config.ID_DEVICE, to="#", cmd=smac_keys["CMD_STATUS_REMOVE_TOPIC"], message=d, udp=True, tcp=False)
+            client.send_message(frm=config.ID_DEVICE, to="#", cmd=smac_keys["CMD_STATUS_REMOVE_TOPIC"], message=d, udp=True, tcp=True)
             # sending ACK
             d1 = {}
             d1[ smac_keys["MESSAGE"] ] = "Topic unsubscribed successfylly"
@@ -169,18 +176,20 @@ class smacInit():
             d1[smac_keys["MESSAGE"]] = "Topic '{}' not unsubscribed".format(id_topic)
             d1[smac_keys["ID_DEVICE"]] = id_device
             d1[smac_keys["ID_TOPIC"]] = id_topic
+            d1[smac_keys["ID_MESSAGE"]] = id_message
             print("Cannot unsubscribe to {}. Passkey error.".format(id_topic))
             if config.ID_DEVICE == frm:
                 print("same device")
             else:
-                client.send_message(frm=config.ID_DEVICE, to=frm, cmd=smac_keys["CMD_INVALID_PIN"], message=d1, udp=True, tcp=False)
+                client.send_message(frm=config.ID_DEVICE, to=frm, cmd=smac_keys["CMD_INVALID_PIN"], message=d1, udp=True, tcp=True)
 
 
     def on_message(self, topic, message, protocol, *args):
             #print(args)
         try:
             print( "{}, {}, {}".format(topic, message, protocol) )
-            config.update_topic_msg_count(topic)
+            if( topic not in  [config.ID_DEVICE, "#"]):
+                config.update_topic_msg_count(topic)
             msg = json.loads(message)
             #print("1")
             frm = msg.get( smac_keys["FROM"] , None)
@@ -251,17 +260,21 @@ class smacInit():
                     ssid = data.get(smac_keys["SSID"])
                     password = data.get(smac_keys["PASSWORD"])
                     passkey = data.get(smac_keys["PASSKEY"])
+                    #id_message = data.get(smac_keys["ID_MESSAGE"])
                     if str(config.PIN_DEVICE) == str(passkey):
                         config.update_config_variable(key="wifi_config_2", value={"ssid": ssid, "password": password})
-                        client.send_message(frm=config.ID_DEVICE, to=frm, cmd=smac_keys["CMD_STATUS_UPDATE_WIFI_CONFIG"],message={}, udp=True, tcp=False)
+                        d1 = {}
+                        d1[smac_keys["ID_MESSAGE"]] = msg_id
+                        client.send_message(frm=config.ID_DEVICE, to=frm, cmd=smac_keys["CMD_STATUS_UPDATE_WIFI_CONFIG"],message=d1, udp=True, tcp=True)
                     else:
                         d1 = {}
                         d1[smac_keys["MESSAGE"]] = "WIFI CONFIG not updated. Passkey Error"
                         #d1[smac_keys["ID_DEVICE"]] = frm
                         #d1[smac_keys["ID_TOPIC"]] = id_topic
+                        d1[smac_keys["ID_MESSAGE"]] = msg_id
                         print("WIFI CONFIG not updated. Passkey Error")
                         client.send_message(frm=config.ID_DEVICE, to=frm, cmd=smac_keys["CMD_INVALID_PIN"],
-                                                message=d1, udp=True, tcp=False)
+                                                message=d1, udp=True, tcp=True)
 
                 if cmd == smac_keys["CMD_UPDATE_SOFTWARE"]:
                     config.update_config_variable(key="mode", value=1)
@@ -277,25 +290,29 @@ class smacInit():
                     interval = data.get(smac_keys["INTERVAL"], 20)
                     passkey = data.get(smac_keys["PASSKEY"])
                     id_device = data.get(smac_keys["ID_DEVICE"])
+                    #id_message = data.get(smac_keys["ID_MESSAGE"])
                     if id_device == config.ID_DEVICE:
                         if str(config.PIN_DEVICE) == str(passkey):
                             config.update_config_variable(key="interval_online", value=interval)
                             d1 = {}
                             d1[smac_keys["INTERVAL"]] = interval
                             d1[smac_keys["ID_DEVICE"]] = id_device
-                            client.send_message(frm=config.ID_DEVICE, to=frm, cmd=smac_keys["CMD_STATUS_UPDATE_INTERVAL_ONLINE"],message=d1, udp=True, tcp=False)
+                            d1[smac_keys["ID_MESSAGE"]] = msg_id
+                            client.send_message(frm=config.ID_DEVICE, to=frm, cmd=smac_keys["CMD_STATUS_UPDATE_INTERVAL_ONLINE"],message=d1, udp=True, tcp=True)
                         else:
                             d1 = {}
                             d1[smac_keys["MESSAGE"]] = "Online Interval not updated. Passkey Error"
                             #d1[smac_keys["ID_DEVICE"]] = config.ID_DEVICE
                             #d1[smac_keys["ID_TOPIC"]] = id_topic
+                            d1[smac_keys["ID_MESSAGE"]] = msg_id
                             print(d1[smac_keys["MESSAGE"]])
                             client.send_message(frm=config.ID_DEVICE, to=frm, cmd=smac_keys["CMD_INVALID_PIN"],
-                                                    message=d1, udp=True, tcp=False)
+                                                    message=d1, udp=True, tcp=True)
 
                 if cmd == smac_keys["CMD_UPDATE_NAME_DEVICE"]:
                     name_device = data.get(smac_keys["NAME_DEVICE"])
                     id_device = data.get(smac_keys["ID_DEVICE"])
+                    #id_message = data.get(smac_keys["ID_MESSAGE"])
                     if id_device == config.ID_DEVICE:
                         passkey = data.get(smac_keys["PASSKEY"])
                         if str(config.PIN_DEVICE) == str(passkey):
@@ -304,36 +321,40 @@ class smacInit():
                             d1 = {}
                             d1[smac_keys["NAME_DEVICE"]] = name_device
                             d1[smac_keys["ID_DEVICE"]] = id_device
-                            client.send_message(frm=config.ID_DEVICE, to=frm, cmd=smac_keys["CMD_STATUS_UPDATE_NAME_DEVICE"],message=d1, udp=True, tcp=False)
+                            d1[smac_keys["ID_MESSAGE"]] = msg_id
+                            client.send_message(frm=config.ID_DEVICE, to=frm, cmd=smac_keys["CMD_STATUS_UPDATE_NAME_DEVICE"],message=d1, udp=True, tcp=True)
                         else:
                             d1 = {}
                             d1[smac_keys["MESSAGE"]] = "Device Name not updated. Passkey Error"
+                            d1[smac_keys["ID_MESSAGE"]] = msg_id
                             #d1[smac_keys["ID_DEVICE"]] = config.ID_DEVICE
                             #d1[smac_keys["ID_TOPIC"]] = id_topic
                             print(d1[smac_keys["MESSAGE"]])
                             client.send_message(frm=config.ID_DEVICE, to=frm, cmd=smac_keys["CMD_INVALID_PIN"],
-                                                    message=d1, udp=True, tcp=False)
+                                                    message=d1, udp=True, tcp=True)
 
                 if cmd == smac_keys["CMD_UPDATE_NAME_PROPERTY"]:
                     name_property = data.get(smac_keys["NAME_PROPERTY"])
                     id_property = data.get(smac_keys["ID_PROPERTY"])
                     id_device = data.get(smac_keys["ID_DEVICE"])
+                    #id_message = data.get(smac_keys["ID_MESSAGE"])
                     if id_device == config.ID_DEVICE:
                         passkey = data.get(smac_keys["PASSKEY"])
                         d1 = {}
                         d1[smac_keys["NAME_PROPERTY"]] = name_property
                         d1[smac_keys["ID_PROPERTY"]] = id_property
                         d1[smac_keys["ID_DEVICE"]] = id_device
+                        d1[smac_keys["ID_MESSAGE"]] = msg_id
                         if str(config.PIN_DEVICE) == str(passkey):
                             config.update_name_property(id_property, name_property)
-                            client.send_message(frm=config.ID_DEVICE, to=frm, cmd=smac_keys["CMD_STATUS_UPDATE_NAME_PROPERTY"],message=d1, udp=True, tcp=False)
+                            client.send_message(frm=config.ID_DEVICE, to=frm, cmd=smac_keys["CMD_STATUS_UPDATE_NAME_PROPERTY"],message=d1, udp=True, tcp=True)
                         else:
                             d1[smac_keys["MESSAGE"]] = "Property Name not updated. Passkey Error"
                             #d1[smac_keys["ID_DEVICE"]] = config.ID_DEVICE
                             #d1[smac_keys["ID_TOPIC"]] = id_topic
                             print(d1[smac_keys["MESSAGE"]])
                             client.send_message(frm=config.ID_DEVICE, to=frm, cmd=smac_keys["CMD_INVALID_PIN"],
-                                                    message=d1, udp=True, tcp=False)
+                                                    message=d1, udp=True, tcp=True)
 
                 if cmd == smac_keys["CMD_ADD_ACTION"]:
                     add_action(data, frm)
@@ -385,6 +406,8 @@ class smacInit():
                 id_prop = prop["id_property"]
                 type_prop = prop["type_property"]
                 value_temp = config.get_config_variable(key=id_prop)
+                if value_temp == None:
+                    value_temp = 0
                 #print(prop)
                 #print("num", num)
                 #print(prop)
@@ -456,7 +479,8 @@ class smacInit():
                         tim = value.split(":")
                         hour = tim[0]
                         minute = tim[1]
-                        DOWLIST = tim[2].split(",")
+                        #DOWLIST = tim[2].split(",")
+                        DOWLIST = list(tim[2])
                         cur_time = time.localtime()
                         cur_hour = cur_time[3]
                         cur_min = cur_time[4]
@@ -499,7 +523,7 @@ class smacInit():
                     d[smac_keys["ID_DEVICE"]] = config.ID_DEVICE
                     d[smac_keys["VALUE"]] = value
                     client.send_message(frm=config.ID_DEVICE, to="#", message=d, cmd=smac_keys["CMD_STATUS_SET_PROPERTY"],
-                                        udp=True, tcp=False)
+                                        udp=True, tcp=True)
                     return True
                 if type_prop == SMAC_PROPERTY["FAN"]:
                     print("VAL:", value)
@@ -509,7 +533,7 @@ class smacInit():
                     d[smac_keys["ID_DEVICE"]] = config.ID_DEVICE
                     d[smac_keys["VALUE"]] = value
                     client.send_message(frm=config.ID_DEVICE, to="#", message=d, cmd=smac_keys["CMD_STATUS_SET_PROPERTY"],
-                                        udp=True, tcp=False)
+                                        udp=True, tcp=True)
                     return True
         #except Exception as e:
         #    print("Exception during set_property: {}".format(e) )
@@ -543,11 +567,29 @@ class smacInit():
             await asyncio.sleep(5)
 
 
+
+
     async def start(self):
+        import wifi_client
         if config.ID_DEVICE== "":
+            #await asyncio.sleep(10)
+            wifi_client.init(setup_AP=False)
             req_get_device_id()
+            #wifi_ap.wlan_ap.active(True)
+        else:
+            import wifi_ap
+            wifi_client.init(setup_AP=True)
+
+            def handleInterrupt(timer):
+                wifi_ap.wlan_ap.active(False)
+
+            timer = machine.Timer(0)
+            timer.init(period=60000, mode=machine.Timer.ONE_SHOT, callback=handleInterrupt)
 
         await asyncio.sleep(2)
+
+
+
         topics = [ t[0] for t in config.SUB_TOPIC ]
         client.subscribe( ["#", config.ID_DEVICE ]+topics )
         blocked_list = config.get_config_variable(key="blocked_topic")
@@ -566,10 +608,10 @@ class smacInit():
             d = {}
             if download_software_status == "0":
                 d[smac_keys["MESSAGE"]] = "No updates available"
-                client.send_message(frm=config.ID_DEVICE, to=dest_topic, cmd=smac_keys["CMD_STATUS_UPDATE_SOFTWARE"], message=d, udp=True, tcp=False)
+                client.send_message(frm=config.ID_DEVICE, to=dest_topic, cmd=smac_keys["CMD_STATUS_UPDATE_SOFTWARE"], message=d, udp=True, tcp=True)
             elif download_software_status == "1":
                 d[smac_keys["MESSAGE"]] = "New Updates Downloaded and Installed."
-                client.send_message(frm=config.ID_DEVICE, to=dest_topic, cmd=smac_keys["CMD_STATUS_UPDATE_SOFTWARE"], message=d, udp=True, tcp=False)
+                client.send_message(frm=config.ID_DEVICE, to=dest_topic, cmd=smac_keys["CMD_STATUS_UPDATE_SOFTWARE"], message=d, udp=True, tcp=True)
 
 
 
@@ -613,6 +655,14 @@ class smacInit():
                         #time.sleep(.1)
                         #await  asyncio.sleep(.1)
                     print(config.PROP_INSTANCE)
+
+                    '''from machine import Pin
+                    from debounce import Pushbutton
+                    reset_pin = Pin(self.RESET_BUTTON, Pin.IN, Pin.PULL_UP)
+                    p1 = Pushbutton(reset_pin)
+                    p1.double_func(self.on_dbl_click, ())
+                    p1.long_func(self.on_long_press, ())'''
+
                 except Exception as e:
                     print("error ip config: {}".format(e))
 

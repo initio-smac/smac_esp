@@ -1,26 +1,27 @@
 {
     "version": "02",
-    "mode": 2,
+    "mode": 0,
     "download_software": 0,
     "wifi_config_1": {
-        "ssid": "Realme",
-        "password": "nopassword"
+        "ssid": "initioenergy",
+        "password": "Smacsystem@6"
     },
     "wifi_config_2": {
-        "ssid": "initioenergy_act",
-        "password": "Smacsystem@6"
+        "ssid": "",
+        "password": ""
     },
     "ap_config": {
         "ssid": "SMAC_DEV",
         "password": "password"
     },
-    "id_device": "D2",
-    "name_device": "smac_D2",
+    "id_device": "Da",
+    "name_device": "smac_Da",
     "pin_device": "1234",
-    "sub_topic": [ ["#", "", ""], ["D2", "", ""], ["T1", "H1", "R1"]],
+    "sub_topic": [ ],
     "interval_online": 20,
     "limit_device": 10,
     "limit_topic": 10,
     "limit_action": 5,
-    "limit_trigger": 5
+    "limit_trigger": 5,
+    "blocked_topic": []
 }

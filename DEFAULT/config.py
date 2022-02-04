@@ -1,6 +1,7 @@
 from DEVICE.smac_device_keys import SMAC_DEVICES
 import json
 
+
 class Config():
     PROPERTY = []
     PROP_INSTANCE = {}
@@ -77,6 +78,12 @@ class Config():
                     for topic in d[key]:
                         if value == topic[0]:
                             d[key].remove(topic)
+                elif (key == "blocked_topic") and (arr_op == "ADD"):
+                    if not (value in d[key]):
+                        d[key] = d[key] + [value]
+                elif (key == "blocked_topic") and (arr_op == "REM"):
+                    if value in d[key]:
+                        d[key].remove(value)
                 else:
                     d[key] = value
                 #print(d)
@@ -106,11 +113,11 @@ class Config():
     def update_name_property(self, id_property, name_property):
         try:
             props = {}
-            with open('device.json', "r") as c1:
+            with open('DEVICE/device.json', "r") as c1:
                 props = json.load(c1)
                 c1.close()
 
-            with open('device.json', "w") as c2:
+            with open('DEVICE/device.json', "w") as c2:
                 d = props.copy()
                 for num, prop in enumerate(d):
                     if prop["id_property"] == id_property:
@@ -122,13 +129,13 @@ class Config():
 
     def add_action(self, id_topic, id_context, id_device, id_property, value):
         try:
-            with open('action.json', "r") as a1:
+            with open('DEVICE/action.json', "r") as a1:
                 actions = json.load(a1)
                 a1.close()
 
             id_act = "{}:{}:{}:{}".format(id_topic, id_context, id_device, id_property)
             #if id_act not in actions.keys():
-            with open('action.json', "w") as c2:
+            with open('DEVICE/action.json', "w") as c2:
                     d = actions.copy()
                     d[id_act] = value
                     c2.write(json.dumps(d))
@@ -138,7 +145,7 @@ class Config():
 
     def get_action(self, id_topic, id_context, id_device, id_property):
         try:
-            with open('action.json', "r") as c1:
+            with open('DEVICE/action.json', "r") as c1:
                 actions = json.load(c1)
                 id_act = "{}:{}:{}:{}".format(id_topic, id_context, id_device, id_property)
                 c1.close()
@@ -151,13 +158,13 @@ class Config():
 
     def remove_action(self, id_topic, id_context, id_device, id_property):
         try:
-            with open('action.json', "r") as c1:
+            with open('DEVICE/action.json', "r") as c1:
                 actions = json.load(c1)
                 id_act = "{}:{}:{}:{}".format(id_topic, id_context, id_device, id_property)
                 c1.close()
                 if id_act in actions.keys():
                     del actions[id_act]
-            with open('action.json', 'w') as c2:
+            with open('DEVICE/action.json', 'w') as c2:
                 c2.write(json.dumps(actions))
                 c2.close()
                 return 1
@@ -167,7 +174,7 @@ class Config():
 
     def get_action_all(self):
         try:
-            with open('action.json', "r") as c1:
+            with open('DEVICE/action.json', "r") as c1:
                 actions = json.load(c1)
                 c1.close()
                 return actions
@@ -177,12 +184,12 @@ class Config():
 
     def add_trigger(self, id_topic, id_context, id_device, id_property, type_trigger, value):
         try:
-            with open('trigger.json', "r") as a1:
+            with open('DEVICE/trigger.json', "r") as a1:
                 triggers = json.load(a1)
                 a1.close()
 
             id_trig = "{}:{}:{}:{}:{}".format(id_topic, id_context, id_device, id_property, type_trigger)
-            with open('trigger.json', "w") as c2:
+            with open('DEVICE/trigger.json', "w") as c2:
                 d = triggers.copy()
                 d[id_trig] = value
                 c2.write(json.dumps(d))
@@ -192,7 +199,7 @@ class Config():
 
     def get_trigger(self, id_topic, id_context, id_device, id_property, type_trigger):
         try:
-            with open('trigger.json', "r") as c1:
+            with open('DEVICE/trigger.json', "r") as c1:
                 triggers = json.load(c1)
                 id_trig = "{}:{}:{}:{}:{}".format(id_topic, id_context, id_device, id_property, type_trigger)
                 c1.close()
@@ -205,13 +212,13 @@ class Config():
 
     def remove_trigger(self, id_topic, id_context, id_device, id_property, type_trigger):
         try:
-            with open('trigger.json', "r") as c1:
+            with open('DEVICE/trigger.json', "r") as c1:
                 triggers = json.load(c1)
                 id_trig = "{}:{}:{}:{}:{}".format(id_topic, id_context, id_device, id_property, type_trigger)
                 c1.close()
                 if id_trig in triggers.keys():
                     del triggers[id_trig]
-            with open('trigger.json', 'w') as c2:
+            with open('DEVICE/trigger.json', 'w') as c2:
                 c2.write(json.dumps(triggers))
                 c2.close()
                 return 1
@@ -220,13 +227,53 @@ class Config():
             return 0
 
     def get_trigger_all(self):
-        #try:
-            with open('trigger.json', "r") as c1:
+        try:
+            with open('DEVICE/trigger.json', "r") as c1:
                 triggers = json.load(c1)
                 c1.close()
                 return triggers
-        #except Exception as e:
-            #print("get trigger all err:{}".format(e) )
-            #return {}
+        except Exception as e:
+            print("get trigger all err:{}".format(e) )
+            return {}
+
+    def update_topic_msg_count(self, id_topic):
+        try:
+            with open('DEVICE/topic_msg_count.json', "r") as c1:
+                config = json.load(c1)
+                c1.close()
+
+            with open('DEVICE/topic_msg_count.json', "w") as c2:
+                d = config.copy()
+                #print("d.get(id_topic), ", d.get(id_topic))
+                count = 1 if( d.get(id_topic) == None ) else d.get(id_topic)+1
+                d[id_topic] = count
+                c2.write(json.dumps(d))
+                c2.close()
+        except Exception as e:
+            print("update topic_msg_count err: {}".format(e))
+
+    def delete_topic_msg_count(self, id_topic):
+        try:
+            with open('DEVICE/topic_msg_count.json', "r") as c1:
+                config = json.load(c1)
+                c1.close()
+
+            with open('DEVICE/topic_msg_count.json', "w") as c2:
+                d = config.copy()
+                del d[id_topic]
+                c2.write(json.dumps(d))
+                c2.close()
+        except Exception as e:
+            print("update topic_msg_count err: {}".format(e))
+
+    def get_topic_msg_count_all(self):
+        try:
+            with open('DEVICE/topic_msg_count.json', "r") as c1:
+                counts = json.load(c1)
+                c1.close()
+                return counts
+        except Exception as e:
+            print("get topic_msg_count all err:{}".format(e) )
+            return {}
 
 config = Config()

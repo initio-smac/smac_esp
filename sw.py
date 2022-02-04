@@ -15,7 +15,7 @@ def long_press():
 
 import uasyncio as asyncio
 
-p = Pin(13, Pin.IN, Pin.PULL_UP)
+p = Pin(33, Pin.IN, Pin.PULL_UP)
 #sw = debounce.Switch(p)
 #sw.open_func(sw_open, ())
 #sw.close_func(sw_close, ())

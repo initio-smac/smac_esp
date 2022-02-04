@@ -1,7 +1,7 @@
-from config import config
+from DEVICE.config import config
 import json
 
-from smac_client import client
+from DEVICE.smac_client import client
 
 try:
     import urequests
@@ -34,7 +34,7 @@ def req_get_password(username):
         print("get password err: {}".format(e) )
 
 
-def rest_call(url, method, request, data=None, json=None, headers=REQ_HEADERS ):
+def rest_call(url, method, request, data=None, json_data=None, headers=REQ_HEADERS ):
     try:
         if request == "request_device_uid":
             headers['Authorization'] = 'smac:smac1'
@@ -44,7 +44,7 @@ def rest_call(url, method, request, data=None, json=None, headers=REQ_HEADERS ):
             password = req_get_password(username)
             headers['Authorization'] = '{}:{}'.format(username, password)
 
-        req = urequests.request(method, url, data=data, json=json, headers=headers)
+        req = urequests.request(method, url, data=data, json=json_data, headers=headers)
         res = req.text
         
         print(res)
@@ -53,11 +53,11 @@ def rest_call(url, method, request, data=None, json=None, headers=REQ_HEADERS ):
         print(r)
         #r = res
         if request == "request_device_uid":
-            d = r["device_id"]
-            config.update_config_file(key="ID_DEVICE", value=d)
-            config.update_config_file(key="SUB_TOPIC", value=d)
-            config.update_config_file(key="NAME_DEVICE", value="smac_{}".format(d))
-            config.update_config_vars()
+            d = r["id_device"]
+            config.update_config_variable(key="id_device", value=d)
+            #config.update_config_variable(key="sub_topic", value=d)
+            config.update_config_variable(key="name_device", value="smac_{}".format(d))
+            config.load_config_variable()
             client.subscribe(d)
         req.close()
     except Exception as e:

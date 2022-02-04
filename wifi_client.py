@@ -1,4 +1,5 @@
 import json
+import time
 
 import network
 from DEVICE.config import config
@@ -19,7 +20,7 @@ except Exception as e:
 def wifi_connect(ssid, password):
     try:
         COUNT = 0
-        global wlan
+        #global wlan
         wlan.connect(ssid, password)
         #if (wlan.isconnected()) or (COUNT >= 10):
         #    return wlan.isconnected()
@@ -46,6 +47,7 @@ def init(setup_AP=False):
         WIFI_NAME = ""
         if not conn1:
             print("Connecting to WIFI_CONIG_2:{}".format(config.WIFI_CONFIG_2["ssid"]))
+            #time.sleep(5)
             conn2 = wifi_connect(config.WIFI_CONFIG_2["ssid"], config.WIFI_CONFIG_2["password"])
             if conn2:
                 WIFI_NAME = config.WIFI_CONFIG_2["ssid"]
@@ -53,8 +55,8 @@ def init(setup_AP=False):
             WIFI_NAME = config.WIFI_CONFIG_1["ssid"]
 
         id_device = config.get_config_variable(key="id_device")
-        AP_TEXT = ""
-        wlan_ap = network.WLAN(network.AP_IF)
+        #AP_TEXT = ""
+        #wlan_ap = network.WLAN(network.AP_IF)
         if wlan.isconnected():
             print("connected")
             print( wlan.ifconfig() )

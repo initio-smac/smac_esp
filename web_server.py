@@ -29,7 +29,11 @@ from DEVICE.config import config
 
 #cli = http_client.HttpClient()
 
+
+
 def copy_folder(COPY_FROM="DEFAULT", COPY_TO="DEVICE"):
+    from blink import blink_led
+    _thread.start_new_thread(blink_led, ())
     TYPE_FILE = 32768
     TYPE_DIR = 16384
     import uos as os
@@ -147,6 +151,8 @@ def start_server():
             #print(http_path.find("/load_config"))
             if http_path == "/":
                 response = open("html/index.html", "r").read()
+            elif http_path == "/scripts.js":
+                response = open("html/scripts.js", "r").read()
             elif http_path.find("/upload_software_file") != -1:
                 print(http_method)
                 size = int(headers['Content-Length'])
@@ -168,10 +174,13 @@ def start_server():
                 response = "Hello world from Socket running on the ESP32"
             elif http_path.find("/load_config") != -1:
                 con = open("DEVICE/config.json", "r").read()
-                rssi = wifi_client.wlan.status('rssi')
                 c = json.loads(con)
-                c["connected_ssid"] = wifi_client.wlan.config('essid')
-                c["connected_ssid_strength"] = rssi + 135
+                try:
+                    rssi = wifi_client.wlan.status('rssi')
+                    c["connected_ssid"] = wifi_client.wlan.config('essid')
+                    c["connected_ssid_strength"] = rssi + 135
+                except Exception as e:
+                    pass
                 response = json.dumps(c)
             elif http_path.find("/update_wifi") != -1:
                 print("update wifi")
@@ -192,12 +201,24 @@ def start_server():
                 for topic in json.loads(sub_topic):
                     config.update_config_variable(key="sub_topic", value=topic, arr_op="REM")
                 response = "Topics Updated Successfully."
+            elif http_path.find("/remove_blocked_topic") != -1:
+                print(params["blocked_topic"])
+                blocked_topic = params["blocked_topic"].replace("%22", '"')
+                for topic in json.loads(blocked_topic):
+                    config.update_config_variable(key="blocked_topic", value=topic, arr_op="REM")
+                response = "Blocked Topics Updated Successfully."
             elif http_path.find("/update_pin_device") != -1:
                 config.update_config_variable(key="pin_device", value=params["pin_device"])
                 response = "Device PIN Updated Successfully."
+            elif http_path.find("/restart_webrepl") != -1:
+                #mode = params.get("mode", 0)
+                config.update_config_variable(key="mode", value=3)
+                print(config.get_config_variable("mode"))
+                machine.reset()
+                response = "Restarting Device in WebREPL mode."
             elif http_path.find("/restart") != -1:
-                mode = params.get("mode", 0)
-                config.update_config_variable(key="mode", value=mode)
+                #mode = params.get("mode", 0)
+                config.update_config_variable(key="mode", value=0)
                 machine.reset()
                 response = "Restarting Device."
             elif http_path.find("/update_input_type") != -1:
@@ -260,11 +281,14 @@ def start_server():
                 led.value(0)
                 response = web_page()'''
 
-            conn.send('HTTP/1.1 200 OK\n')
-            conn.send('Content-Type: text/html\n')
-            conn.send('Connection: close\n\n')
-            conn.sendall(response)
-            conn.close()
+            try:
+                conn.send('HTTP/1.1 200 OK\n')
+                conn.send('Content-Type: text/html\n')
+                conn.send('Connection: close\n\n')
+                conn.sendall(response)
+                conn.close()
+            except Exception as e:
+                print("Error while serving: {}".format(e))
             '''except Exception as e:
                 conn.send('HTTP/1.1 400 Bad Request\n')
                 conn.send('Content-Type: text/html\n')
@@ -274,4 +298,4 @@ def start_server():
                 conn.close()'''
 
 #_thread.start_new_thread( start_server, () )
-start_server()
+#start_server()

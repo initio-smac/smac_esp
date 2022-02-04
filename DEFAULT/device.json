@@ -31,12 +31,12 @@
    },
    {
       "id_property": "P3",
-      "type_property": "0",
-      "name_property": "SWITCH4",
+      "type_property": "1",
+      "name_property": "FAN",
       "value": "0",
       "value_min": "0",
-      "value_max": "1",
-      "pin_output": "12",
+      "value_max": "4",
+      "pin_output": "12,13,14",
       "pin_input": "33"
   }
 ]

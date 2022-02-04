@@ -1,15 +1,16 @@
 import json
 import time
 
-from smac_context import add_trigger, add_action, remove_action, remove_trigger
+from DEVICE.smac_context import add_trigger, add_action, remove_action, remove_trigger
 
 try:
     import machine
     from machine import Timer
     import uasyncio as asyncio
-    from smac_devices import SmacFan, SmacSwitch
+    from DEVICE.smac_devices import SmacFan, SmacSwitch
     import _thread
-    from smac_ota2 import smacOTA
+    #from smac_ota2 import smacOTA
+    #import wifi_client
     ESP = True
 except Exception as e:
     print(e)
@@ -18,19 +19,20 @@ except Exception as e:
 
 
 
-from config import config
-config.load_config_variable()
+from DEVICE.config import config
+#config.load_config_variable()
 
 
-from smac_client import client
-from smac_requests import req_get_device_id
-from smac_keys import smac_keys
-from smac_platform import SMAC_PLATFORM
-from smac_device_keys import SMAC_DEVICES, SMAC_PROPERTY
+from DEVICE.smac_client import client
+from DEVICE.smac_requests import req_get_device_id
+from DEVICE.smac_keys import smac_keys
+from DEVICE.smac_platform import SMAC_PLATFORM
+from DEVICE.smac_device_keys import SMAC_DEVICES, SMAC_PROPERTY
 
 class smacInit():
     SENDING_INFO = 0
     TIME_SYNC = False
+    RESET_BUTTON = 35
 
 
     def send_test(self, *args):
@@ -99,12 +101,14 @@ class smacInit():
         #client.send_message(frm=config.ID_DEVICE, to=dest_topic, cmd=smac_keys["CMD_END_SEND_INFO"], message={},
         #                    udp=True, tcp=False)
 
+
     def add_topic(self, frm, id_topic, name_home, name_topic, id_device, passkey, *args):
         print("len SUB_TOPIC", len(config.SUB_TOPIC))
         print(config.LIMIT)
         print(config.get_config_variable(key="limit_topic"))
         if config.LIMIT["LIMIT_TOPIC"] >= len(config.SUB_TOPIC) :
             if str(passkey) == str(config.PIN_DEVICE):
+                #created_time = time.mktime((2000, 1, 1, 0, 0, 0, 5, 1))
                 config.update_config_variable(key='sub_topic', value=[id_topic, name_home, name_topic], arr_op="ADD", reload_variables=True)
                 client.subscribe(id_topic)
                 d = {}
@@ -177,6 +181,7 @@ class smacInit():
             #print(args)
         try:
             print( "{}, {}, {}".format(topic, message, protocol) )
+            config.update_topic_msg_count(topic)
             msg = json.loads(message)
             #print("1")
             frm = msg.get( smac_keys["FROM"] , None)
@@ -189,7 +194,7 @@ class smacInit():
             #print("2")
             #print(data)
 
-            if frm != config.ID_DEVICE:
+            if (frm != config.ID_DEVICE):
                 if cmd == smac_keys["CMD_SET_PROPERTY"]:
                     #print("3")
                     id_prop = msg.get( smac_keys["ID_PROPERTY"], None)
@@ -348,7 +353,7 @@ class smacInit():
                     self.trigger_context(id_context)
 
         except Exception as e:
-            print("Exception while decoding message: {}".format(e) )
+            print("Exception while decoding message: {}, msg: {}".format(e, message) )
         #    raise e
 
     def trigger_context(self, id_context):
@@ -381,6 +386,8 @@ class smacInit():
                 id_prop = prop["id_property"]
                 type_prop = prop["type_property"]
                 value_temp = config.get_config_variable(key=id_prop)
+                if value_temp == None:
+                    value_temp = 0
                 #print(prop)
                 #print("num", num)
                 #print(prop)
@@ -421,7 +428,26 @@ class smacInit():
             if(COUNTER % (config.INTERVAL_ONLINE)) == 0:
                 client.send_message(frm=config.ID_DEVICE, to="#", cmd=smac_keys["CMD_ONLINE"], message={})
 
-            if(COUNTER % 600) == 0:
+            if(COUNTER % 10) == 0:
+                print("checking topic message counts", time.localtime())
+                msg_counts = config.get_topic_msg_count_all()
+                with open('DEVICE/topic_msg_count.json', "w") as c2:
+                    print(msg_counts)
+                    for id_topic in msg_counts.keys():
+                        if msg_counts[id_topic] >= 50:
+                            client.block_topic(id_topic)
+                            config.update_config_variable(key="blocked_topic", value=id_topic, arr_op="ADD")
+                        del msg_counts[id_topic]
+                    c2.write(json.dumps(msg_counts))
+                    c2.close()
+
+                    if len(client.BLOCKED_LIST) >= 10:
+                        # print block list reached
+                        pass
+
+
+
+            if(COUNTER % 60) == 0:
                 print("checking triggers on time:", time.localtime())
                 triggers = config.get_trigger_all()
                 for trig in triggers.keys():
@@ -520,13 +546,28 @@ class smacInit():
             await asyncio.sleep(5)
 
 
+
+
     async def start(self):
+        import wifi_client
         if config.ID_DEVICE== "":
+            #await asyncio.sleep(10)
+            wifi_client.init(setup_AP=False)
             req_get_device_id()
+            #wifi_ap.wlan_ap.active(True)
+        else:
+            import wifi_ap
+            wifi_client.init(setup_AP=True)
 
         await asyncio.sleep(2)
+
+
+
         topics = [ t[0] for t in config.SUB_TOPIC ]
         client.subscribe( ["#", config.ID_DEVICE ]+topics )
+        blocked_list = config.get_config_variable(key="blocked_topic")
+        if blocked_list != None:
+            client.BLOCKED_LIST = blocked_list
         print(client.SUB_TOPIC)
         #client.subscribe( "D1" )
         #client.subscribe( "D2" )
@@ -559,7 +600,7 @@ class smacInit():
             except Exception as e:
                 print("Internet Time not Set", e)
                 self.TIME_SYNC = False
-            with open("device.json", "r") as f:
+            with open("DEVICE/device.json", "r") as f:
                 try:
                     f1 = json.loads(f.read())
                     self.PROPERTY = f1
@@ -587,6 +628,14 @@ class smacInit():
                         #time.sleep(.1)
                         #await  asyncio.sleep(.1)
                     print(config.PROP_INSTANCE)
+
+                    '''from machine import Pin
+                    from debounce import Pushbutton
+                    reset_pin = Pin(self.RESET_BUTTON, Pin.IN, Pin.PULL_UP)
+                    p1 = Pushbutton(reset_pin)
+                    p1.double_func(self.on_dbl_click, ())
+                    p1.long_func(self.on_long_press, ())'''
+
                 except Exception as e:
                     print("error ip config: {}".format(e))
 

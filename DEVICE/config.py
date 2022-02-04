@@ -1,6 +1,7 @@
 from DEVICE.smac_device_keys import SMAC_DEVICES
 import json
 
+
 class Config():
     PROPERTY = []
     PROP_INSTANCE = {}
@@ -243,7 +244,7 @@ class Config():
 
             with open('DEVICE/topic_msg_count.json', "w") as c2:
                 d = config.copy()
-                print("d.get(id_topic), ", d.get(id_topic))
+                #print("d.get(id_topic), ", d.get(id_topic))
                 count = 1 if( d.get(id_topic) == None ) else d.get(id_topic)+1
                 d[id_topic] = count
                 c2.write(json.dumps(d))

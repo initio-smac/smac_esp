@@ -1,217 +1,3 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body {
-          font-family: Helvetica;
-          background-color: #e0e0e0;
-        }
-
-        .C_main {
-            width: 100%;
-        }
-
-        @media only screen and (min-width: 600px) {
-          .C_main {
-               margin: auto;
-               width: 60%;
-               /*background-color: coral;*/
-          }
-        }
-
-        input[type=text] {
-          width: 50%;
-          padding: 12px 20px;
-          margin: 8px 0;
-          box-sizing: border-box;
-          font-size: 15px;
-        }
-
-         input[type=button] {
-          padding: 12px 20px;
-          margin: 8px 0;
-          box-sizing: border-box;
-          font-size: 15px;
-        }
-
-        .C_header {
-            height: 50px;
-            font-size: 20px;
-            text-align: center;
-        }
-
-        .C_block {
-            width: 100%;
-        }
-
-        .C_title {
-            width: 100%;
-            padding: 12px;
-            background-color: #b0b0b0;
-            font-size: 15px;
-        }
-
-        #id_loader {
-
-        }
-
-        .C_info_wrapper {
-            width: 100%;
-            height: 100%;
-            padding: 0;
-            margin: 0;
-            background-color: rgba(0,0,0, 0.5);;
-            position: fixed;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            right: 0;
-            display: none;
-        }
-
-        #id_info, #id_loader {
-            position: absolute;
-            width: 100px;
-            height: 40px;
-            padding: 50px 50px;
-            background-color: white;
-            top: 40%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            box-shadow: 2px 2px 10px 5px #888888;
-            border-radius: 5px;
-            text-align: center;
-
-        }
-
-
-    </style>
-</head>
-<body>
-
-
-<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> -->
-<div class="C_info_wrapper" id="id_loader_wrapper">
-    <div id="id_loader" style=""> Loading... </div>
-</div>
-
-<div class="C_info_wrapper" id="id_info_wrapper">
-    <div id="id_info"> This is info </div>
-</div>
-<div class="C_main">
-    <div class="C_header">
-        Device Config
-    </div>
-
-    <div class="C_block">
-        <div  class="C_title"> Version: <span id="id_version"> </span> </div>
-    <div> <br> <br>
-
-    <div class="C_block">
-        <div  class="C_title"> Select Input Type</div>
-        <div>
-            <input type="radio" name="sel_input" value="switch" id="id_ip_sel_switch"> Switch <br>
-            <input type="radio" name="sel_input" value="pushbutton" id="id_ip_sel_pushbtn"> Push Button <br>
-            <input type="button" value="update"  id="id_select_input_type">
-        </div>
-    <div> <br> <br>
-
-    <div class="C_block">
-        <div id="id_conn1" class="C_title"> Connection: 1 </div> <br>
-        <input type="text" placeholder="wifi_ssid" id="id_wifi_ssid_1"> <br>
-        <input type="text" placeholder="wifi_password" id="id_wifi_password_1"> <br>
-        <input type="button" value="update"  id="id_wifi_submit_1">
-    <div> <br>
-
-    <div class="C_block">
-        <div id="id_conn2" class="C_title"> Connection: 2 </div> <br>
-        <input type="text" placeholder="wifi_ssid" id="id_wifi_ssid_2"> <br>
-        <input type="text" placeholder="wifi_password" id="id_wifi_password_2"> <br>
-        <input type="button" value="update"  id="id_wifi_submit_2">
-    <div> <br>
-
-
-    <div class="C_block">
-        <div id="" class="C_title"> Access Point </div> <br>
-        <input type="text" placeholder="AP ssid" id="id_ap_ssid"> <br>
-        <input type="text" placeholder="AP password" id="id_ap_password"> <br>
-        <input type="button" value="update"  id="id_ap_submit">
-    <div> <br>
-
-    <div class="C_block">
-        <div id="id_pin_device_wrapper" class="C_title"> PIN Device </div> <br>
-        <input type="text" placeholder="PIN" id="id_text_pin_device"> <br>
-        <input type="button" value="update"  id="id_update_pin_device">
-    <div> <br>
-
-    <div class="C_block">
-        <div id="id_name_device_wrapper" class="C_title"> Name Device </div> <br>
-        <input type="text" placeholder="Device Name" id="id_text_name_device"> <br>
-        <input type="button" value="update"  id="id_update_name_device">
-    <div> <br>
-
-    <div class="C_topic_wrapper C_block"  style="">
-        <div class="C_title" > Subscribed Homes </div> <br>
-        <div id="id_topics" >
-        </div>
-        <input type="button" value="remove selected home"  id="id_remove_topic">
-    </div> <br>
-
-
-    <div class="C_version_wrapper C_block"  style="">
-        <div class="C_title"> Updates and Downloads </div> <br>
-        <input type="button" value="check and download updates"  id="id_check_for_update"> <br>
-        <!-- <input type="button" value="download and install"  id="id_download_update" style="display:none;"> -->
-        <!-- <input type="button" value="download and install"  id="id_download_update" style="display: none;"> -->
-    </div><br>
-
-    <div class="C_version_wrapper C_block"  style="">
-        <div class="C_title"> Factory Settings </div> <br>
-        <input type="button" value="Reset to Default Version"  id="id_reset_device"> <br>
-    </div><br>
-
-    <!-- <div class="C_block">
-        <input type="file" id="id_file" accept="*">
-        <input type="button" value="upload file" id="id_upload_file1" onclick="uploadFile()">
-    </div> -->
-
-    <div class="C_block">
-        <input type="checkbox" id="id_set_mode"> Restart in Same Mode
-        <input type="button" value="save and restart"  id="id_restart">
-    <div> <br>
-
-
-    <!--<div>
-        Connection: Default <br>
-        <input type="text" placeholder="wifi_ssid" id="id_wifi_ssid_3" disabled> <br>
-        <input type="text" placeholder="wifi_password" id="id_wifi_password_3" disabled> <br>
-        <input type="button" value="update"  id="id_wifi_submit">
-    <div> <br>
-
-     <div>
-        <input type="text" placeholder="0.0.0.0" id="id_mqtt_addr">
-        <input type="button" value="update"  id="id_mqtt_addr_submit">
-    <div> <br> -->
-
-    <!-- <div id="id_update">
-        <input type="button" value="check for update"  id="id_check_for_update">
-        <div class="C_update_block" style="display: none;">
-             <input type="button" value="download update"  id="id_download_update">
-        </div>
-    <div> <br>
-
-    <div>
-        Enter Group ID
-        <input type="text" placeholder="Enter Group ID" id="id_group_id">
-        <input type="button" value="send"  id="id_addgroup_submit">
-    <div> <br> -->
-
-
-
-</div>
-
-
-<script>
     var DATA = {};
     var id_info = document.getElementById("id_info")
 
@@ -257,7 +43,7 @@
                         } else {
                             alert(resp["text"])
                         }
-                        
+
                     } else if( refresh_on_success ) {
                         location.reload();
                     } else {
@@ -301,6 +87,7 @@
                         conn.innerHTML = conn.innerHTML + " ("+ strength + "%) ";
                       }
                       document.getElementById('id_version').innerHTML = jd.version;
+                      document.getElementById('id_device').innerHTML = jd.id_device;
                       document.getElementById('id_ap_ssid').value = jd.ap_config["ssid"];
                       document.getElementById('id_ap_password').value = jd.ap_config["password"];
                       document.getElementById('id_wifi_ssid_1').value = jd.wifi_config_1["ssid"];
@@ -327,6 +114,23 @@
                       } else {
                         document.getElementById('id_ip_sel_switch').checked = true;
                         //document.getElementById('id_ip_sel_pushbtn').checked = false;
+                      }
+
+                      var blocked_topics = jd.blocked_topic;
+                      if(blocked_topics.length > 0) {
+                          var text = "";
+                          //document.getElementsByClassName("C_topic_wrapper")[0].style.display = "block";
+                          for (i = 0; i < blocked_topics.length; i++) {
+                               id_topic = blocked_topics[i]
+                               //if( (id_topic != "") && (id_topic != jd.id_device) && (id_topic != "#") && (id_topic != null) ) {
+                               if( (id_topic != "") && (id_topic != "#") &&  (id_topic != null) ) {
+                                    text += "<input type='checkbox' name='sel_blocked_topic' value='"+ id_topic +"'>" + id_topic + "<br>";
+                               }
+                        }
+                          document.getElementById("id_blocked_topic_container").innerHTML +=  text;
+                      } else {
+                        document.getElementById("id_blocked_topic_container").innerHTML = "No Topics";
+                        document.getElementById("id_remove_blocked_topic").style.display = "none";
                       }
 
                       var topics = jd.sub_topic;
@@ -358,7 +162,7 @@
     document.getElementById("id_loader").style.display = "block";
     xhttp.send();
 
-   
+
 
   document.getElementById("id_wifi_submit_1").onclick = function(){
       var ssid = document.getElementById("id_wifi_ssid_1").value;
@@ -425,6 +229,14 @@
       rest_call(url="/restart", method="GET", data=data, refresh_on_success=true)
   };
 
+  /*document.getElementById("id_restart_webrepl").onclick = function(){
+      console.log("restarting in WebREPL mode...");
+      showInfo("Restarting Device in WebREPL mode...")
+      data = {}
+      data["mode"] = 3;
+      rest_call(url="/restart_webrepl", method="GET", data=data, refresh_on_success=true)
+  };*/
+
   document.getElementById("id_reset_device").onclick = function(){
       console.log("Resetting Device");
       showInfo("Resetting Device...")
@@ -434,7 +246,29 @@
       rest_call(url="/reset_device", method="GET", data=data)
   };
 
-  document.getElementById("id_remove_topic").onclick = function(){
+  document.getElementById("id_remove_blocked_topic").onclick = function(){
+      var topics = [];
+      var t = document.getElementsByName("sel_blocked_topic");
+      for(i in t) {
+          if(t[i].checked) {
+            topics.push(t[i].value);
+          }
+      };
+      //console.log(topics)
+      if(topics.length == 0) {
+            //id_info.innerHTML = "Select a Home to Remove"
+            alert("Select a Topic to Remove")
+      } else{
+        //console.log(topics);
+        //console.log(topics.values());
+        var data = {}
+        data["blocked_topic"] = JSON.stringify(topics) //stringify for converting js-array to python-list
+        console.log(data)
+        rest_call(url="/remove_blocked_topic", method="GET", data=data)
+      }
+  };
+
+    document.getElementById("id_remove_topic").onclick = function(){
       var topics = [];
       var t = document.getElementsByName("sel_topic");
       for(i in t) {
@@ -462,42 +296,5 @@
       var data = {}
       //data["version"] = DATA.version
       rest_call(url="/check_and_download_update", method="GET", data=data, refresh_on_success=true)
-      /*var url = "https://smacsystem.com/download/esp32/version.json";
-      var xhttp = new XMLHttpRequest();
-      xhttp.onreadystatechange = function() {
-          if (this.readyState == 4) {
-              if(this.status == 200) {
-                  var result = this.responseText;
-                  alert(result);
-              }else {
-                alert("error while checking for updates");
-              }
-          }
-      };
-      xhttp.open("GET", url, true);
-      xhttp.withCredentials = false;
-      //xhttp.setRequestHeader("Content-type", "application/json; charset=utf-8");
-      xhttp.setRequestHeader('Access-Control-Allow-Origin', '*');
-      xhttp.send(  );*/
   };
 
-  /*document.getElementById("id_check_for_update").onclick = function(){
-      //console.log("Downlo");
-      document.getElementById("id_info").innerHTML = "Downloading Updates.";
-      var data = {}
-      data["version"] = "02"
-      rest_call(url="/download_update", method="GET", data=data, refresh_on_success=false)
-  };*/
-
-  /*document.getElementById("id_download_update").onclick = function(){
-      //console.log("Downlo");
-      id_info.innerHTML = "Downloading Updates.";
-      var data = {}
-      data["version"] = DATA.version
-      rest_call(url="/download_update", method="GET", data=data, refresh_on_success=false)
-  };*/
-
-
-</script>
-</div>
-</html>

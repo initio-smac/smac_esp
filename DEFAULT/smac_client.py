@@ -19,6 +19,7 @@ else:
 
 class SMACClient():
     SUB_TOPIC = []
+    BLOCKED_LIST = []
     UDP_PORT = 37020
     UDP_REQ = []
     ZMQ_PUB_PORT = 5556
@@ -33,7 +34,7 @@ class SMACClient():
     ZMQ_CONN_INITIALIZED = False
     ZMQ_SEND_MSG_QUEUE = []
     #ZMQ_FRAME_FLAG = b"\x00"
-    ZMQ_LONG_FRAME = True
+    ZMQ_LONG_FRAME = False
     #_zmq_pub_connected = 0
     #_zmq_sub_connected = 0
     MAX_BUFFER = 256
@@ -98,9 +99,23 @@ class SMACClient():
             self.udp_sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         except:
             pass
+
+        try:
+            self.udp_sock.bind(("", self.UDP_PORT))
+        except:
+            pass
         #self.udp_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         #self.udp_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.udp_sock.bind(("",self.UDP_PORT))
+
+
+    def block_topic(self, id_topic):
+        self.BLOCKED_LIST.append(id_topic)
+
+    def unblock_topic(self, id_topic):
+        try:
+            self.BLOCKED_LIST.remove(id_topic)
+        except:
+            pass
 
     # subscribe to a topic
     def subscribe(self, topic):
@@ -144,12 +159,13 @@ class SMACClient():
         if ack:
             msg[ smac_keys["ACK"] ] = 1
         #msg[ smac_keys["ID_MESSAGE"] ] = msg_id if(msg_id != None) else self.MSG_ID
-        msg[ smac_keys["ID_MESSAGE"] ] = self.MSG_ID
+        #msg[ smac_keys["ID_MESSAGE"] ] = self.MSG_ID
         #msg[ smac_keys["MESSAGE"] ] = d
         msg = json.dumps(msg)
         if udp:
             self.send_udp(topic, msg)
         if tcp:
+            #print("MSS", msg)
             self.ZMQ_SEND_MSG_QUEUE.append( (topic, msg) )
         #print("msg_queue", self.ZMQ_SEND_MSG_QUEUE)
         self.MSG_ID += 1
@@ -160,6 +176,7 @@ class SMACClient():
         await asyncio.sleep(0)
         if (self.zmq_pub_writer != None) and (self.ZMQ_PUB_CONNECTED):
             msg = "{} {}".format(topic, message)
+            #print("MSSS", msg)
             #l = len(msg)
 
             try:
@@ -176,13 +193,18 @@ class SMACClient():
                     l = "".join( [ chr( int(l[i:i+N], 16) )  for i in range(0, len(l), N)])
                     m = bytearray("\x02{}{}\n".format(l, msg))
                 else:
-                    m = bytearray("\x00{}{}\n".format(chr(len(msg)+1),msg))
+                    #print(len(msg))
+                    msg = msg+"\n"
+                    m = bytearray("\x00") + bytes([(len(msg))] ) + bytearray(msg)
+                    #m = b"\x00\xe0"+ bytearray(msg+"\n")
+                    #print(m)
+                    #m = bytearray("\x00{}{}".format(chr(len(msg)),msg))
                 #print(m)
                 self.zmq_pub_writer.write( m )
                 #self.zmq_pub_writer.write(bytearray("\x00\x04\x30\x31\x32\x33", encoding="utf-8") )
                 #self.zmq_pub_writer.write(bytearray("00040123", encoding="utf-8") )
                 await self.zmq_pub_writer.drain()
-                print(msg)
+                #print(msg)
                 #print(chr(len(msg)))
                 #print(len(msg))
                 #print(  m )
@@ -219,7 +241,7 @@ class SMACClient():
     # encoding keyword is not supported in ESP
     def smac_bytearray(self, string):
         if SMAC_PLATFORM == "ESP":
-            return bytearray(string)
+            return bytearray(string, "raw_unicode_escape")
         else:
             return bytearray(string, encoding="raw_unicode_escape")
 
@@ -327,7 +349,8 @@ class SMACClient():
                     print("sub", sub)
 
             self.ZMQ_CONN_INITIALIZED = False
-            self.on_start(self.ZMQ_PUB_CONNECTED, self.ZMQ_SUB_CONNECTED)
+            if self.on_start != None:
+                self.on_start(self.ZMQ_PUB_CONNECTED, self.ZMQ_SUB_CONNECTED)
 
 
 
@@ -348,7 +371,7 @@ class SMACClient():
                     #print(topic)
                     #print(self.SUB_TOPIC)
                     #print(topic in self.SUB_TOPIC)
-                    if topic in self.SUB_TOPIC:
+                    if (topic in self.SUB_TOPIC) and (topic not in self.BLOCKED_LIST):
                         try:
                             self.process_message(topic, msg, "UDP")
                         except:
@@ -369,11 +392,18 @@ class SMACClient():
             await asyncio.sleep(0)
             for num, message in enumerate(self.ZMQ_REQ):
                 try:
-                    print("zmq_message: [{}]".format(message))
+                    print("zmq_message: {}".format(message))
                     d = message.split(" ", 1)
                     topic = d[0]
                     msg = d[1]
-                    if topic in self.SUB_TOPIC:
+                    #print(topic)
+                    #print(self.SUB_TOPIC)
+                    #print(topic in self.SUB_TOPIC)
+                    #print(self.BLOCKED_LIST)
+                    #print("###")
+                    if (topic in self.SUB_TOPIC) and (topic not in self.BLOCKED_LIST):
+                        #print("MM ", message)
+                        #print("zmq_message: {}".format(message))
                         if "SPEED_TEST" in msg:
                             text,START_TIME, PKT_ID = msg.split(":")
                             if int(PKT_ID) == self.SPD_TEST_PKT_ID:
@@ -388,8 +418,8 @@ class SMACClient():
                         else:
                             try:
                                 self.process_message(topic, msg, "ZMQ")
-                            except:
-                                pass
+                            except Exception as e:
+                                print("Error while processing Zmq msg: ", e)
                             
                         del self.ZMQ_REQ[num]
                     else:
@@ -411,7 +441,34 @@ class SMACClient():
                 self.UDP_REQ.append(d)
             except:
                 pass
+                #self.UDP_REQ = []
             await asyncio.sleep(0)
+
+    async def listen_zmq1(self, *args):
+        await asyncio.sleep(0)
+        while 1:
+            await asyncio.sleep(0)
+            if self.ZMQ_SUB_CONNECTED:
+
+                data = await self.zmq_sub_reader.readline()
+                if data:
+                    msg = hexdata = dummy = ""
+                    for c in data:
+                        hexdata += ("|" + hex(c).upper())
+                        if (len(hexdata) < 16 * 3):
+                            dummy = bytearray(" " * ((16 * 3) - len(hexdata)))
+                        if 20 < c < 128:
+                            msg += chr(c)
+                        #else:
+                        #    msg += "."
+                    #print("Hex: " + hexdata + "|" + dummy + "\t" + msg)
+                    #print("Hex", hexdata)
+                    #print("Dummy", dummy)
+                    #print(data)
+                    print("Msg", msg)
+                    #print("\n")
+
+
 
     # wait for messages on ZMQ port and append to self.ZMQ_REQ
     async def listen_zmq(self, *args):
@@ -434,21 +491,32 @@ class SMACClient():
                         #print(len(self.ZMQ_FRAME_FLAG))
                         #for dat in d:
                         #    if (dat != None) and (dat != ''):
-                        data = data[2:-1]
-                        d = data.decode("utf-8")
+                        #print(data)
+                        #print(data.decode("raw_unicode_escape") )
+                        try:
+                            data = data.decode("utf-8")[2:]
+                        except Exception as e:
+                            print(e)
+                            data = data[2:].decode("utf-8")
+                        #topic, data = data.split(b" ", 2)
+                        #print(data)
+                        #print(topic)
+                        #d = topic.decode("utf-8")[-1] + " " + data.decode("utf-8")
+                        #print(data)
 
                         #print(d)
                         #print("zmq_msg: {}".format(d) )
                         #print("zmq_msg_len: {}".format( len(d)) )
-                        self.ZMQ_REQ.append(d)
+                        self.ZMQ_REQ.append(data)
                 #else:
                     # if not connected
                     #await asyncio.sleep(1)
                 #    pass
-                    await asyncio.sleep(0)
+                await asyncio.sleep(0)
             except Exception as e:
                 print("listen zmq err: {}".format(e) )
-            await asyncio.sleep(0)
+                #self.ZMQ_REQ = []
+                await asyncio.sleep(0)
 
    
 
@@ -458,8 +526,10 @@ class SMACClient():
         while 1:
             await asyncio.sleep(self.SPD_TEST_INTERVAL)
             print("sending")
-            await self.check_speed_test()
-            #await self.send_zmq("D1", "LED ONON")
+            #await self.check_speed_test()
+            a = {"F":"D111","5":"D1","6":"#","7":"g"}
+            #await self.send_zmq("#","{}".format(a))
+            self.send_udp("#", a)
             i += 1
 
     async def check_speed_test(self, *args):

@@ -142,7 +142,7 @@ class Switch:
 # An alternative Pushbutton solution with lower RAM use is available here
 # https://github.com/kevinkk525/pysmartnode/blob/dev/pysmartnode/utils/abutton.py
 class Pushbutton:
-    debounce_ms = 100
+    debounce_ms = 50
     long_press_ms = 5000
     double_click_ms = 400
     def __init__(self, pin, suppress=False):

@@ -31,6 +31,7 @@ class TarExtracter:
                 f = t.extractfile(i)
                 with open("DEVICE/" + i.name, "wb") as f1:
                     f1.write(f.read())
+                gc.collect()
         uos.remove(file)
         gc.collect()
 
@@ -56,25 +57,25 @@ class SmacOTA:
         print("checking for updates...")
         FILENAME =  "version.json"
         url = self.SMAC_NEW_UPDATE_URL + FILENAME
-        #try:
-        resp = self.client.request(method="GET", url=url)
-        #resp = request(method="GET", url=url)
-        status = resp.status_code
-        dat = resp.json()
-        print(status)
-        print(resp.reason)
-        print(dat)
-        if resp.status_code == 200:
-            ver =  int(dat["version"])
-            print(ver)
-            print(int(cur_version))
-            if( ver > int(cur_version) ):
-                return dat["version"]
+        try:
+            resp = self.client.request(method="GET", url=url)
+            #resp = request(method="GET", url=url)
+            status = resp.status_code
+            dat = resp.json()
+            print(status)
+            print(resp.reason)
+            print(dat)
+            if resp.status_code == 200:
+                ver =  int(dat["version"])
+                print(ver)
+                print(int(cur_version))
+                if( ver > int(cur_version) ):
+                    return dat["version"]
 
-        return -1
-        #except Exception as e:
-        print("Error while checking for updates", e)
-        return -1
+            return -1
+        except Exception as e:
+            print("Error while checking for updates", e)
+            return -1
 
 
 
@@ -85,10 +86,14 @@ class SmacOTA:
         print(FILENAME)
         url = self.SMAC_NEW_UPDATE_URL + FILENAME
         print(url)
+        #import DEVICE.config as cn
+        #import _thread
+        #_thread.start_new_thread(cn.blink_led, ())
         #_thread.start_new_thread(self.toggle_pin, (2,))
         try:
             resp = self.client.request(method="GET", url=url, saveToFile=FILENAME)
             if resp.status_code == 200:
+                gc.collect()
                 ext = TarExtracter()
                 ext.extract(FILENAME)
                 config.update_config_variable(key="version", value=version)
@@ -137,6 +142,8 @@ class SmacOTA:
             machine.reset()
         else:
             print("cannnot initiate Software Update.", resp.reason)
+            config.update_config_variable(key="mode", value=0)
+            machine.reset()
         resp.close()
 
 smacOTA = SmacOTA()

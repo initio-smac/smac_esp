@@ -6,8 +6,8 @@ wlan.active( True )
 SSID = "initioenergy_act"
 PWD = "Smacsystem@6"
 
-SSID = "Realme"
-PWD = "nopassword"
+#SSID = "Realme"
+#PWD = "nopassword"
 
 print("Connecting to WIFI:{}".format(SSID))
 wlan.connect(SSID, PWD)
