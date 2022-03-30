@@ -116,19 +116,52 @@ class SMACClient():
             self.BLOCKED_LIST.remove(id_topic)
         except:
             pass
+            
+    async def _subscribe(self, topic):
+        topic  = str(topic)
+        t = topic 
+        print("subscribed to {}".format(t) )
+        tt = bytes('\x00', "utf-8") + bytes( [ len(t)+1 ] ) + bytes('\x01', "utf-8") + bytes( t , "utf-8")
+        print(tt)
+        self.zmq_sub_writer.write(tt)
+        await self.zmq_sub_writer.drain()
+        
+        
+    async def _unsubscribe(self, topic):
+        topic  = str(topic)
+        t = topic 
+        tt = bytes('\x00',"utf-8") + bytes( [ len(t)+1 ] )  + bytes('\x00', "utf-8") + bytes( t , "utf-8")
+        self.zmq_sub_writer.write(tt)
+        await self.zmq_sub_writer.drain()
+        print(tt)
+        print("unsubscribed to {}".format(t))
 
     # subscribe to a topic
-    def subscribe(self, topic):
+    def subscribe(self, topic, *args):
         if type(topic) == list:
-            self.SUB_TOPIC += [ i for i in topic if i not in self.SUB_TOPIC ]
+            #self.SUB_TOPIC += [ i for i in topic if i not in self.SUB_TOPIC ]
+            if self.ZMQ_SUB_CONNECTED:
+                for i in topic:
+                    if topic not in self.SUB_TOPIC:
+                        self.SUB_TOPIC.append(topic)
+                        #await self._subscribe(topic)
+                        #print("subscribed to {}".format(topic))
         else:
             if topic not in self.SUB_TOPIC:
-                self.SUB_TOPIC.append(topic)
+                
+                if self.ZMQ_SUB_CONNECTED:
+                    self.SUB_TOPIC.append(topic)
+                    #await self._subscribe(topic)
+                    #print("subscribed to {}".format(topic))
 
     # unsubscribe to a topic
     def unsubscribe(self, topic):
         if topic in self.SUB_TOPIC:
             self.SUB_TOPIC.remove(topic)
+            #smac_zmq.unsubscribe(topic)
+            if self.ZMQ_SUB_CONNECTED:
+                self._unsubscribe(topic)
+                #print("unsubscribed to {}".format(topic))
 
     # send through UDP socket
     def send_udp(self, topic, message, addr="255.255.255.255", broadcast=False ):
@@ -313,8 +346,8 @@ class SMACClient():
                         await writer.drain()
                     if (b"READY" in data): #Found zmq READY, Send Subscription Start
                         print("ZMQ READY Subscribe")  
-                        writer.write(smac_zmq.zSubStart)
-                        await writer.drain()
+                        #writer.write(smac_zmq.zSubStart)
+                        #await writer.drain()
                         self.ZMQ_SUB_CONNECTED = True
                         #break
                         return 1

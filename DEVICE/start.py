@@ -567,6 +567,22 @@ class smacInit():
             await asyncio.sleep(5)
 
 
+    async def subscribe_topics(self):
+        await asyncio.sleep(1)
+        #topics = [ t[0] for t in config.SUB_TOPIC ]
+        #topics =  ["#", config.ID_DEVICE ]+ top
+        while True:
+            print("SUB CONNECTED: {}".format(client.ZMQ_SUB_CONNECTED) )
+            if client.ZMQ_SUB_CONNECTED:
+                await client._subscribe('#')
+                await client._subscribe(config.ID_DEVICE)
+                
+                for t in config.SUB_TOPIC:
+                   if t[0] not in ['']:
+                       await client._subscribe(t[0])
+                       print(t[0]) 
+                break
+            await asyncio.sleep(1)
 
 
     async def start(self):
@@ -586,12 +602,16 @@ class smacInit():
             timer = machine.Timer(0)
             timer.init(period=60000, mode=machine.Timer.ONE_SHOT, callback=handleInterrupt)
 
-        await asyncio.sleep(2)
+        #await asyncio.sleep(2)
 
 
-
-        topics = [ t[0] for t in config.SUB_TOPIC ]
-        client.subscribe( ["#", config.ID_DEVICE ]+topics )
+        #topics = [ t[0] for t in config.SUB_TOPIC ]
+        #client.subscribe( ["#", config.ID_DEVICE ]+topics )
+        #import threading
+        #th = threading.Thread(target=self.subscribe_topics, args=())
+        #th.start()
+        #import _thread
+        #_thread.start_new_thread( self.subscribe_topics, () )
         blocked_list = config.get_config_variable(key="blocked_topic")
         if blocked_list != None:
             client.BLOCKED_LIST = blocked_list
@@ -673,12 +693,13 @@ class smacInit():
 
         if ESP:
             self.send_device_info(dest_topic="#")
+            t3 = asyncio.create_task(self.subscribe_topics())
             t1 = asyncio.create_task(client.main())
             t2 = asyncio.create_task(self.interval())
             #t3 = asyncio.create_task(self.test_pins())
+            await t3
             await t2
             await t1
-            #await t3
             #asyncio.gather( self.interval(), client.main())
         else:
             #import threading

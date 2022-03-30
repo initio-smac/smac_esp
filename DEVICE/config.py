@@ -1,6 +1,35 @@
 from DEVICE.smac_device_keys import SMAC_DEVICES
 import json
 
+DEFAULT_CONFIG = '''{
+    "version": "02",
+    "mode": 0,
+    "download_software": 0,
+    "wifi_config_1": {
+        "ssid": "",
+        "password": ""
+    },
+    "wifi_config_2": {
+        "ssid": "",
+        "password": ""
+    },
+    "ap_config": {
+        "ssid": "SMAC_DEV",
+        "password": "password"
+    },
+    "id_device": "D1",
+    "name_device": "smac_D1",
+    "pin_device": "1234",
+    "sub_topic": [ ],
+    "interval_online": 20,
+    "limit_device": 10,
+    "limit_topic": 10,
+    "limit_action": 5,
+    "limit_trigger": 5,
+    "blocked_topic": []
+}'''
+
+
 
 class Config():
     PROPERTY = []
@@ -25,8 +54,8 @@ class Config():
 
     def load_config_variable(self):
         try:
-            with open('DEVICE/config.json', "r") as c:
-                config = json.load(c)
+            with open('DEVICE/config.json', "r") as c1:
+                config = json.load(c1)
                 self.WIFI_CONFIG_1 = config['wifi_config_1']
                 self.WIFI_CONFIG_2 = config['wifi_config_2']
                 self.AP_CONFIG = config['ap_config']
@@ -45,10 +74,10 @@ class Config():
                 #global MODE
                 #print(config.get("mode"))
                 #MODE = config.get("mode", 0)
-                c.close()
+                c1.close()
 
         except Exception as e:
-            print("update config vars err:{}".format(e) )
+            print("load config vars err:{}".format(e) )
 
     def get_config_variable(self, key):
         try:
@@ -57,7 +86,7 @@ class Config():
                 c1.close()
                 return config.get(key, None)
         except Exception as e:
-            print("get config file err:{}, key:{}".format(e, key) )
+            print("get config err:{}, key:{}".format(e, key) )
             return None
 
     # arr_op = [ ADD, REM]
@@ -92,7 +121,7 @@ class Config():
             if reload_variables:
                 self.load_config_variable()
         except Exception as e:
-            print("update config file err: {}".format(e))
+            print("update config err: {}".format(e))
 
     def delete_config_variable(self, key):
         try:
@@ -108,7 +137,7 @@ class Config():
                     c2.write(json.dumps(d))
                     c2.close()
         except Exception as e:
-            print("delete config file err: {}".format(e))
+            print("delete config err: {}".format(e))
 
     def update_name_property(self, id_property, name_property):
         try:
@@ -125,7 +154,7 @@ class Config():
                 c2.write(json.dumps(d))
                 c2.close()
         except Exception as e:
-            print("update config file err: {}".format(e))
+            print("update property name err: {}".format(e))
 
     def add_action(self, id_topic, id_context, id_device, id_property, value):
         try:
