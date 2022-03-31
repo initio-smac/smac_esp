@@ -140,17 +140,18 @@ class SMACClient():
     def subscribe(self, topic, *args):
         if type(topic) == list:
             #self.SUB_TOPIC += [ i for i in topic if i not in self.SUB_TOPIC ]
-            if self.ZMQ_SUB_CONNECTED:
-                for i in topic:
-                    if topic not in self.SUB_TOPIC:
-                        self.SUB_TOPIC.append(topic)
+            for i in topic:
+                if topic not in self.SUB_TOPIC:
+                    self.SUB_TOPIC.append(topic)
+                    if self.ZMQ_SUB_CONNECTED:
                         #await self._subscribe(topic)
+                        asyncio.run( self._subscribe(topic) )
                         #print("subscribed to {}".format(topic))
         else:
             if topic not in self.SUB_TOPIC:
-                
+                self.SUB_TOPIC.append(topic)
                 if self.ZMQ_SUB_CONNECTED:
-                    self.SUB_TOPIC.append(topic)
+                    asyncio.run( self._subscribe(topic) )
                     #await self._subscribe(topic)
                     #print("subscribed to {}".format(topic))
 
@@ -160,7 +161,7 @@ class SMACClient():
             self.SUB_TOPIC.remove(topic)
             #smac_zmq.unsubscribe(topic)
             if self.ZMQ_SUB_CONNECTED:
-                self._unsubscribe(topic)
+                asyncio.run( self._unsubscribe(topic) )
                 #print("unsubscribed to {}".format(topic))
 
     # send through UDP socket

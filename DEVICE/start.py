@@ -574,12 +574,15 @@ class smacInit():
         while True:
             print("SUB CONNECTED: {}".format(client.ZMQ_SUB_CONNECTED) )
             if client.ZMQ_SUB_CONNECTED:
-                await client._subscribe('#')
-                await client._subscribe(config.ID_DEVICE)
-                
+                #asyncio.run( client._subscribe('topic') )
+                #await client._subscribe('topic1')
+                #await client._subscribe(config.ID_DEVICE)
+                client.subscribe('#')
+                client.subscribe(config.ID_DEVICE)
                 for t in config.SUB_TOPIC:
                    if t[0] not in ['']:
-                       await client._subscribe(t[0])
+                       #await client._subscribe(t[0])
+                       client.subscribe(t[0])
                        print(t[0]) 
                 break
             await asyncio.sleep(1)
