@@ -15,6 +15,7 @@ while True:
     #print(data)
     N = 1-N
     print("sending {}".format(N))
-    data = '# {"5":"D999", "6":"D1", "7":"0", "K": "P0", "L":"0", "N":"' + str(N) +'"}\n'
-    sock_pub.send(data.encode("utf-8"))
-    time.sleep(5)
+    data = 'D1 {"5":"D999", "6":"D1", "7":"0", "K": "P0", "L":"0", "N":"' + str(N) +'"}\n'
+    print(data)
+    sock_pub.send_string(data)
+    time.sleep(3)

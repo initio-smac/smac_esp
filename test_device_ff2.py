@@ -53,6 +53,9 @@ PROPERTY = [
   }
 ]
 
+TOTAL_DEVICES =  34
+INTERVAL = 30
+
 class TestDevice():
 
     SUB_TOPIC = []
@@ -167,7 +170,7 @@ class TestDevice():
         msg[ smac_keys["TO"] ] = to
         msg[ smac_keys["COMMAND"] ] = cmd
         msg = json.dumps(msg)
-        msg1 = "{} {}".format(topic, msg)
+        msg1 = "{} {}\n".format(topic, msg)
         
         if udp:
             try:
@@ -217,7 +220,7 @@ class TestDevice():
             #threading.Timer(10, self.send_interval).start()
             #time.sleep(10)
             #await asyncio.sleep(10)
-            time.sleep(10)
+            time.sleep(INTERVAL)
 
 
     def start_thread(self):
@@ -270,7 +273,7 @@ DEVICES = {}
 
 #t1 = threading.Thread(target=main, args=())
 #t1.start()
-TOTAL_DEVICES =  54
+
 for dev in range(2, TOTAL_DEVICES):
     DEVICES[dev] = TestDevice()
     id_device = "D{}".format(dev)

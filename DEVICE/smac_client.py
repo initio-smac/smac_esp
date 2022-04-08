@@ -53,6 +53,10 @@ class SMACClient():
     _on_speed_test = None
     MSG_ID = 0
     PENDING_ACKS = []
+    UDP_MAX_MSGS = 100
+    ZMQ_MAX_MSGS = 100
+    DEVICE_BUSY = False
+    MSG_COUNT = 0
 
     # on start callback
     @property
@@ -397,6 +401,7 @@ class SMACClient():
             await asyncio.sleep(0)
             for num, message in enumerate(self.UDP_REQ):
                 try:
+                    
                     print("udp_message: {}".format(message))
                     d = message.split(" ", 1)
                     #print(d)
@@ -410,13 +415,13 @@ class SMACClient():
                             self.process_message(topic, msg, "UDP")
                         except:
                             pass
-                        del self.UDP_REQ[num]
-                    else:
-                        self.UDP_REQ.remove(message)
+                    #    del self.UDP_REQ[num]
+                    #else:
+                    #    self.UDP_REQ.remove(message)
                 except Exception as e:
                     print(e)
-                    self.UDP_REQ.remove(message)
-
+                    #self.UDP_REQ.remove(message)
+                self.UDP_REQ.remove(message)
 
     # handle messages appended on self.ZMQ_REQ
     async def on_message_zmq(self, *args):
@@ -426,6 +431,7 @@ class SMACClient():
             await asyncio.sleep(0)
             for num, message in enumerate(self.ZMQ_REQ):
                 try:
+                    
                     print("zmq_message: {}".format(message))
                     d = message.split(" ", 1)
                     topic = d[0]
@@ -455,12 +461,13 @@ class SMACClient():
                             except Exception as e:
                                 print("Error while processing Zmq msg: ", e)
                             
-                        del self.ZMQ_REQ[num]
-                    else:
-                        self.ZMQ_REQ.remove(message)
+                        #del self.ZMQ_REQ[num]
+                    #else:
+                    #    self.ZMQ_REQ.remove(message)
                 except Exception as e:
                     print("on_message_zmq err: {}".format(e) )
-                    self.ZMQ_REQ.remove(message)
+                    #self.ZMQ_REQ.remove(message)
+                self.ZMQ_REQ.remove(message)
 
         
 
@@ -469,10 +476,18 @@ class SMACClient():
         print("listening udp port...")
         await asyncio.sleep(0)
         while True:
-            try:        
+            try:
+                #print(len(self.UDP_REQ))
+                #print(self.UDP_MAX_MSGS)
+                #if len(self.UDP_REQ) < self.UDP_MAX_MSGS:
                 data, addr = self.udp_sock.recvfrom(self.MAX_BUFFER)
-                d = data.decode("utf-8")
-                self.UDP_REQ.append(d)
+                if not self.DEVICE_BUSY:
+                    d = data.decode("utf-8")
+                    self.UDP_REQ.append(d)
+                #    if self.DEVICE_BUSY:
+                #        self.DEVICE_BUSY = False
+                #else:
+                #    self.DEVICE_BUSY = True
             except:
                 pass
                 #self.UDP_REQ = []
@@ -483,7 +498,6 @@ class SMACClient():
         while 1:
             await asyncio.sleep(0)
             if self.ZMQ_SUB_CONNECTED:
-
                 data = await self.zmq_sub_reader.readline()
                 if data:
                     msg = hexdata = dummy = ""
@@ -514,11 +528,15 @@ class SMACClient():
                 #print("self.ZMQ_SUB_CONNECTED", self.ZMQ_SUB_CONNECTED)
                 #if self.ZMQ_SUB_CONNECTED:
                 #print("CONN_SUB", self.ZMQ_SUB_CONNECTED)
+                #print(len(self.ZMQ_REQ))
+                #print(self.ZMQ_MAX_MSGS)
+                #if( len(self.ZMQ_REQ) < self.ZMQ_MAX_MSGS ) and self.ZMQ_SUB_CONNECTED:
+                #print("busy ", self.DEVICE_BUSY)
                 if self.ZMQ_SUB_CONNECTED:
                     data = await self.zmq_sub_reader.readline()
                     #print("zmq_dat: {}".format(data))
                     #print("at_eof: {}".format(self.zmq_sub_reader.at_eof()) )
-                    if data != b"":
+                    if (not self.DEVICE_BUSY) and data != b"":
                         #data = data[2:]
 
                         #d = data.split(self.ZMQ_FRAME_FLAG)
@@ -542,6 +560,10 @@ class SMACClient():
                         #print("zmq_msg: {}".format(d) )
                         #print("zmq_msg_len: {}".format( len(d)) )
                         self.ZMQ_REQ.append(data)
+                #    if self.DEVICE_BUSY:
+                #        self.DEVICE_BUSY = False
+                #else:
+                #    self.DEVICE_BUSY = True
                 #else:
                     # if not connected
                     #await asyncio.sleep(1)
