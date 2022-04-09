@@ -145,7 +145,8 @@ class Pushbutton:
     debounce_ms = 50
     long_press_ms = 5000
     double_click_ms = 400
-    def __init__(self, pin, suppress=False):
+    pattern_ms = 2500
+    def __init__(self, pin, suppress=False, pattern="101010"):
         self.pin = pin # Initialise for input
         self._supp = suppress
         self._dblpend = False  # Doubleclick waiting for 2nd click
@@ -158,8 +159,30 @@ class Pushbutton:
         self._dd = False  # Ditto for doubleclick
         self.sense = pin.value()  # Convert from electrical to logical value
         self.state = self.rawstate()  # Initial state
+
+        self.detected_pattern = ""
+        self.pattern = pattern
+        self.pattern_fn = False
+        self.pattern_args = False
+        self.is_checking_pattern = False
+
         loop = asyncio.get_event_loop()
         loop.create_task(self.buttoncheck())  # Thread runs forever
+
+    def check_pattern(self):
+        #self.is_checking_pattern = True
+        #pat = "".join(self.detected_pattern)
+        pat = self.detected_pattern
+        print("detected pattern ", pat)
+        if pat == self.pattern:
+            print("pattern matched")
+            if self.pattern_fn:
+                launch(self.pattern_fn, self.pattern_args)
+        else:
+            print("pattern not matched")
+        self.detected_pattern = ""
+        self.is_checking_pattern = False
+
 
     def press_func(self, func, args=()):
         self._tf = func
@@ -196,11 +219,24 @@ class Pushbutton:
             self._ld = Delay_ms(self._lf, self._la)
         if self._df:
             self._dd = Delay_ms(self._ddto)
+        #print(self.pattern_fn)
+        #print(self.pattern_args)
+        if self.pattern_fn:
+            pp = Delay_ms(self.check_pattern)
         while True:
             state = self.rawstate()
             # State has changed: act on it now.
             if state != self.state:
                 self.state = state
+                #print(self.is_checking_pattern)
+                #print(self.detected_pattern)
+                if self.pattern_fn:
+                    if not self.is_checking_pattern:
+                        self.is_checking_pattern = True
+                        pp.trigger(Pushbutton.pattern_ms) 
+
+                    s = "1" if state else "0"
+                    self.detected_pattern += s
                 if state:  # Button pressed: launch pressed func
                     if self._tf:
                         launch(self._tf, self._ta)
@@ -231,3 +267,18 @@ class Pushbutton:
                     self._dblran = False
             # Ignore state changes until switch has settled
             await asyncio.sleep_ms(Pushbutton.debounce_ms)
+
+'''def test_fn(a, b):
+    print("a+b = {}".format(a+b))
+
+async def test_pattern():
+    await asyncio.sleep(1)
+    from machine import Pin
+    p = Pin(23, Pin.IN)
+    p1 = Pushbutton(p)
+    p1.pattern_fn = test_fn
+    p1.pattern_args = (5,3)
+    while True:
+        await asyncio.sleep(1)
+
+asyncio.run( test_pattern() )'''

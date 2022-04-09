@@ -5,6 +5,8 @@ from DEVICE.smac_context import add_trigger, add_action, remove_action, remove_t
 
 try:
     import machine
+    import gc
+    gc.enable()
     #from machine import Timer
     import uasyncio as asyncio
     from DEVICE.smac_devices import SmacFan, SmacSwitch
@@ -33,6 +35,8 @@ class smacInit():
     SENDING_INFO = 0
     TIME_SYNC = False
     RESET_BUTTON = 35
+    MSG_COUNT_PREV = 0
+    DEVICE_DATA_SEND_INTERVAL = 60
 
 
     def send_test(self, *args):
@@ -62,14 +66,17 @@ class smacInit():
         topics = config.SUB_TOPIC
         print(topics)
         print("11")
+        default_topic = ['', '', '']
+        if( default_topic not in topics ):
+            topics += [ default_topic ]
         #topics.remove( "#" )
         #topics.remove( config.ID_DEVICE )
-        topics.append( ['', '', ''] )
+        #topics.append( ['#', '', ''] )
         #print(topics)
         #print(dest_topic)
         #client.send_message(frm=config.ID_DEVICE, to=dest_topic, cmd= smac_keys["CMD_INIT_SEND_INFO"], message={}, udp=True, tcp=False)
         for t in topics:
-            if t[0] not in ("#", config.ID_DEVICE):
+            if t[0] not in (config.ID_DEVICE,):
                 m = {}
                 m[ smac_keys["TOPIC"] ] = 1
                 m[ smac_keys["ID_TOPIC"] ] = t[0]
@@ -78,24 +85,29 @@ class smacInit():
                 m[ smac_keys["NAME_DEVICE"]] = config.NAME_DEVICE
                 m[ smac_keys["TYPE_DEVICE"]] = config.TYPE_DEVICE
                 m[ smac_keys["ID_DEVICE"]] = config.ID_DEVICE
-                print(m)
-                client.send_message(frm=config.ID_DEVICE, to=dest_topic, cmd=smac_keys["CMD_SEND_INFO"], message=m, udp=True, tcp=True)
-                print("sent {}".format(t))
-        print("send topics")
-
-        for p in self.PROPERTY:
-            print(p)
-            p1 = {}
-            p1[ smac_keys["PROPERTY"] ] = 1
-            p1[ smac_keys["ID_DEVICE"] ] = config.ID_DEVICE
-            p1[ smac_keys["ID_PROPERTY"] ] = p["id_property"]
-            p1[ smac_keys["TYPE_PROPERTY"] ] = p["type_property"]
-            p1[ smac_keys["NAME_PROPERTY"] ] = p["name_property"]
-            p1[ smac_keys["VALUE"]] = p["value"]
-            p1[ smac_keys["VALUE_MIN"]] = p["value_min"]
-            p1[ smac_keys["VALUE_MAX"]] = p["value_max"]
-            client.send_message(frm=config.ID_DEVICE, to=dest_topic, cmd=smac_keys["CMD_SEND_INFO"], message=p1, udp=True, tcp=True)
-        print("send property")
+                #print(m)
+                if t[0] == "":
+                    client.send_message(frm=config.ID_DEVICE, to="#", cmd=smac_keys["CMD_SEND_INFO"], message=m, udp=True, tcp=False)
+                else:
+                    client.send_message(frm=config.ID_DEVICE, to=t[0], cmd=smac_keys["CMD_SEND_INFO"], message=m, udp=False, tcp=True)
+                
+                for p in self.PROPERTY:
+                    #print(p)
+                    p1 = {}
+                    p1[ smac_keys["PROPERTY"] ] = 1
+                    p1[ smac_keys["ID_DEVICE"] ] = config.ID_DEVICE
+                    p1[ smac_keys["ID_PROPERTY"] ] = p["id_property"]
+                    p1[ smac_keys["TYPE_PROPERTY"] ] = p["type_property"]
+                    p1[ smac_keys["NAME_PROPERTY"] ] = p["name_property"]
+                    p1[ smac_keys["VALUE"]] = p["value"]
+                    p1[ smac_keys["VALUE_MIN"]] = p["value_min"]
+                    p1[ smac_keys["VALUE_MAX"]] = p["value_max"]
+                    if t[0] == "":
+                        client.send_message(frm=config.ID_DEVICE, to="#", cmd=smac_keys["CMD_SEND_INFO"], message=p1, udp=True, tcp=False)
+                    else:
+                        client.send_message(frm=config.ID_DEVICE, to=t[0], cmd=smac_keys["CMD_SEND_INFO"], message=p1, udp=False, tcp=True)
+                print("send property to topic: {}".format(t[0]))
+            print("sent topic ", t[0])
 
         self.SENDING_INFO = 0
         #client.send_message(frm=config.ID_DEVICE, to=dest_topic, cmd=smac_keys["CMD_END_SEND_INFO"], message={},
@@ -186,8 +198,9 @@ class smacInit():
 
     def on_message(self, topic, message, protocol, *args):
             #print(args)
+        client.MSG_COUNT += 1
         try:
-            print( "{}, {}, {}".format(topic, message, protocol) )
+            #print( "{}, {}, {}".format(topic, message, protocol) )
             if( topic not in  [config.ID_DEVICE, "#"]):
                 config.update_topic_msg_count(topic)
             msg = json.loads(message)
@@ -201,6 +214,7 @@ class smacInit():
             data = msg
             #print("2")
             #print(data)
+            #print(cmd == smac_keys["CMD_SET_PROPERTY"])
 
             if (frm != config.ID_DEVICE):
                 if cmd == smac_keys["CMD_SET_PROPERTY"]:
@@ -209,6 +223,9 @@ class smacInit():
                     type_prop = msg.get( smac_keys["TYPE_PROPERTY"], None)
                     #instance = data.get( smac_keys["INSTANCE"], None )
                     value = msg.get( smac_keys["VALUE"], 0 )
+                    #print(id_prop)
+                    #print(type_prop)
+                    #print(value)
                     #print("4")
                     if type_prop in [ SMAC_PROPERTY["SWITCH"], SMAC_PROPERTY["FAN"] ]:
                         #print("5")
@@ -237,7 +254,8 @@ class smacInit():
                     print("sending device info...")
                     try:
                         #self.send_device_info( dest_topic=frm)
-                        self.send_device_info( dest_topic="#")
+                        #self.send_device_info( dest_topic="#")
+                        pass
                     except Exception as e:
                         raise e
 
@@ -448,6 +466,31 @@ class smacInit():
             if(COUNTER % (config.INTERVAL_ONLINE)) == 0:
                 client.send_message(frm=config.ID_DEVICE, to="#", cmd=smac_keys["CMD_ONLINE"], message={})
 
+            if(COUNTER %(config.INTERVAL_ONLINE*3)) == 0:
+                self.send_device_info(dest_topic="#")
+
+            if( COUNTER % 5 ) == 0:
+                #print("checking RAM availability")
+                #avail = gc.mem_free() / 1024
+                #print("{}KB".format(avail) )
+                print("MSG_COUNT_PREV", self.MSG_COUNT_PREV)
+                print("MSG_COUNT", client.MSG_COUNT)
+                diff = client.MSG_COUNT - self.MSG_COUNT_PREV
+                self.MSG_COUNT_PREV = client.MSG_COUNT
+                if diff > 30:
+                    client.DEVICE_BUSY = True
+                    client.UDP_REQ = []
+                    client.ZMQ_REQ = []
+                #if client.DEVICE_BUSY:
+                    print("Device is Busy Due to Network Load")
+                    #d = {}
+                    #d[smac_keys["ID_DEVICE"]] = config.ID_DEVICE
+                    #d[smac_keys["VALUE"]] = 5
+                    #client.send_message(frm=config.ID_DEVICE, to="#", cmd=smac_keys["CMD_DEVICE_BUSY"], message=d, udp=True, tcp=False)
+                else:
+                    if client.DEVICE_BUSY:
+                        client.DEVICE_BUSY = False
+
             if(COUNTER % 10) == 0:
                 print("checking topic message counts", time.localtime())
                 msg_counts = config.get_topic_msg_count_all()
@@ -457,6 +500,7 @@ class smacInit():
                         if msg_counts[id_topic] >= 50:
                             client.block_topic(id_topic)
                             config.update_config_variable(key="blocked_topic", value=id_topic, arr_op="ADD")
+                            pass
                         del msg_counts[id_topic]
                     c2.write(json.dumps(msg_counts))
                     c2.close()
@@ -567,6 +611,25 @@ class smacInit():
             await asyncio.sleep(5)
 
 
+    async def subscribe_topics(self):
+        await asyncio.sleep(1)
+        #topics = [ t[0] for t in config.SUB_TOPIC ]
+        #topics =  ["#", config.ID_DEVICE ]+ top
+        while True:
+            print("SUB CONNECTED: {}".format(client.ZMQ_SUB_CONNECTED) )
+            if client.ZMQ_SUB_CONNECTED:
+                #asyncio.run( client._subscribe('topic') )
+                #await client._subscribe('topic1')
+                #await client._subscribe(config.ID_DEVICE)
+                client.subscribe('#')
+                client.subscribe(config.ID_DEVICE)
+                for t in config.SUB_TOPIC:
+                   if t[0] not in ['']:
+                       #await client._subscribe(t[0])
+                       client.subscribe(t[0])
+                       print(t[0]) 
+                break
+            await asyncio.sleep(1)
 
 
     async def start(self):
@@ -586,12 +649,16 @@ class smacInit():
             timer = machine.Timer(0)
             timer.init(period=60000, mode=machine.Timer.ONE_SHOT, callback=handleInterrupt)
 
-        await asyncio.sleep(2)
+        #await asyncio.sleep(2)
 
 
-
-        topics = [ t[0] for t in config.SUB_TOPIC ]
-        client.subscribe( ["#", config.ID_DEVICE ]+topics )
+        #topics = [ t[0] for t in config.SUB_TOPIC ]
+        #client.subscribe( ["#", config.ID_DEVICE ]+topics )
+        #import threading
+        #th = threading.Thread(target=self.subscribe_topics, args=())
+        #th.start()
+        #import _thread
+        #_thread.start_new_thread( self.subscribe_topics, () )
         blocked_list = config.get_config_variable(key="blocked_topic")
         if blocked_list != None:
             client.BLOCKED_LIST = blocked_list
@@ -673,12 +740,13 @@ class smacInit():
 
         if ESP:
             self.send_device_info(dest_topic="#")
+            t3 = asyncio.create_task(self.subscribe_topics())
             t1 = asyncio.create_task(client.main())
             t2 = asyncio.create_task(self.interval())
             #t3 = asyncio.create_task(self.test_pins())
+            await t3
             await t2
             await t1
-            #await t3
             #asyncio.gather( self.interval(), client.main())
         else:
             #import threading

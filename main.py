@@ -15,7 +15,7 @@ def set_internet_time():
     except:
         pass
 
-RESET_BUTTON = 33
+RESET_BUTTON = 26
 
 
 try:
@@ -59,8 +59,10 @@ def init_reset_func():
     from debounce import Pushbutton
     ip = Pin(RESET_BUTTON, Pin.IN, Pin.PULL_UP)
     rs = Pushbutton(ip)
-    rs.double_func(on_dbl_click, ())
-    rs.long_func(on_long_press, ())
+    rs.pattern_fn = on_dbl_click
+    rs.pattern_args = ()
+    #rs.double_func(on_dbl_click, ())
+    #rs.long_func(on_long_press, ())
 
 # run functions
 MODE = config.MODE

@@ -172,7 +172,7 @@ class SMACClient():
     def send_udp(self, topic, message, addr="255.255.255.255", broadcast=False ):
         try:
             addr = "255.255.255.255" if broadcast else addr
-            msg = "{} {}".format(topic, message)
+            msg = "{} {}\n".format(topic, message)
             msg = msg.encode("utf-8")
             self.udp_sock.sendto(msg, (addr, self.UDP_PORT))
         except Exception as e:

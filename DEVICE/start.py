@@ -66,9 +66,12 @@ class smacInit():
         topics = config.SUB_TOPIC
         print(topics)
         print("11")
+        default_topic = ['', '', '']
+        if( default_topic not in topics ):
+            topics += [ default_topic ]
         #topics.remove( "#" )
         #topics.remove( config.ID_DEVICE )
-        topics.append( ['', '', ''] )
+        #topics.append( ['#', '', ''] )
         #print(topics)
         #print(dest_topic)
         #client.send_message(frm=config.ID_DEVICE, to=dest_topic, cmd= smac_keys["CMD_INIT_SEND_INFO"], message={}, udp=True, tcp=False)
@@ -82,16 +85,14 @@ class smacInit():
                 m[ smac_keys["NAME_DEVICE"]] = config.NAME_DEVICE
                 m[ smac_keys["TYPE_DEVICE"]] = config.TYPE_DEVICE
                 m[ smac_keys["ID_DEVICE"]] = config.ID_DEVICE
-                print(m)
-                if t[0] == "#":
-                    client.send_message(frm=config.ID_DEVICE, to=t[0], cmd=smac_keys["CMD_SEND_INFO"], message=m, udp=True, tcp=False)
+                #print(m)
+                if t[0] == "":
+                    client.send_message(frm=config.ID_DEVICE, to="#", cmd=smac_keys["CMD_SEND_INFO"], message=m, udp=True, tcp=False)
                 else:
                     client.send_message(frm=config.ID_DEVICE, to=t[0], cmd=smac_keys["CMD_SEND_INFO"], message=m, udp=False, tcp=True)
-                print("sent {}".format(t))
-
-                print("send topics")
+                
                 for p in self.PROPERTY:
-                    print(p)
+                    #print(p)
                     p1 = {}
                     p1[ smac_keys["PROPERTY"] ] = 1
                     p1[ smac_keys["ID_DEVICE"] ] = config.ID_DEVICE
@@ -101,11 +102,12 @@ class smacInit():
                     p1[ smac_keys["VALUE"]] = p["value"]
                     p1[ smac_keys["VALUE_MIN"]] = p["value_min"]
                     p1[ smac_keys["VALUE_MAX"]] = p["value_max"]
-                    if t[0] == "#":
-                        client.send_message(frm=config.ID_DEVICE, to=t[0], cmd=smac_keys["CMD_SEND_INFO"], message=p1, udp=True, tcp=False)
+                    if t[0] == "":
+                        client.send_message(frm=config.ID_DEVICE, to="#", cmd=smac_keys["CMD_SEND_INFO"], message=p1, udp=True, tcp=False)
                     else:
                         client.send_message(frm=config.ID_DEVICE, to=t[0], cmd=smac_keys["CMD_SEND_INFO"], message=p1, udp=False, tcp=True)
                 print("send property to topic: {}".format(t[0]))
+            print("sent topic ", t[0])
 
         self.SENDING_INFO = 0
         #client.send_message(frm=config.ID_DEVICE, to=dest_topic, cmd=smac_keys["CMD_END_SEND_INFO"], message={},
@@ -252,7 +254,8 @@ class smacInit():
                     print("sending device info...")
                     try:
                         #self.send_device_info( dest_topic=frm)
-                        self.send_device_info( dest_topic="#")
+                        #self.send_device_info( dest_topic="#")
+                        pass
                     except Exception as e:
                         raise e
 
@@ -495,8 +498,8 @@ class smacInit():
                     print(msg_counts)
                     for id_topic in msg_counts.keys():
                         if msg_counts[id_topic] >= 50:
-                            #client.block_topic(id_topic)
-                            #config.update_config_variable(key="blocked_topic", value=id_topic, arr_op="ADD")
+                            client.block_topic(id_topic)
+                            config.update_config_variable(key="blocked_topic", value=id_topic, arr_op="ADD")
                             pass
                         del msg_counts[id_topic]
                     c2.write(json.dumps(msg_counts))

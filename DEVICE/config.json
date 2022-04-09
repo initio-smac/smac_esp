@@ -14,8 +14,8 @@
         "ssid": "SMAC_DEV",
         "password": "password"
     },
-    "id_device": "D1",
-    "name_device": "smac_D1",
+    "id_device": "D2",
+    "name_device": "smac_D2",
     "pin_device": "1234",
     "sub_topic": [ ],
     "interval_online": 20,
@@ -23,5 +23,6 @@
     "limit_topic": 10,
     "limit_action": 5,
     "limit_trigger": 5,
-    "blocked_topic": []
+    "blocked_topic": [],
+    "input_type": "pushbutton"
 }
