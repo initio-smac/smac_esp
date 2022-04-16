@@ -254,7 +254,7 @@ class smacInit():
                     print("sending device info...")
                     try:
                         #self.send_device_info( dest_topic=frm)
-                        #self.send_device_info( dest_topic="#")
+                        self.send_device_info( dest_topic="#")
                         pass
                     except Exception as e:
                         raise e
@@ -406,6 +406,55 @@ class smacInit():
                 value = actions[act]
                 self.set_property(id_prop, type_prop, value)
 
+    async def interval_2(self):
+        await asyncio.sleep(0)
+        while 1:
+            for num, prop in enumerate(self.PROPERTY):
+                #print("\n\n\n")
+                value = prop["value"]
+                if type(value) == str:
+                    value = int(value)
+                id_prop = prop["id_property"]
+                type_prop = prop["type_property"]
+                value_temp = config.get_config_variable(key=id_prop)
+                if value_temp == None:
+                    value_temp = 0
+                #print(prop)
+                #print("num", num)
+                #print(prop)
+                #print(value)
+                #print(value_temp)
+                if value_temp != value:
+                    print("\n\n\n")
+                    #lastUpdated_time = config.get_config_variable(key=str(id_prop) + "_time")
+                    #if lastUpdated_time == None:
+                    #    lastUpdated_time = time.time()
+                    #t_diff = time.time() - lastUpdated_time
+                    #print(id_prop)
+                    #print(type_prop)
+                    #print(type(type_prop))
+                    print("value_temp", value_temp)
+                    print("value", value)
+                    #print("t_diff", t_diff)
+                    #if t_diff > .2:
+                    changed = self.set_property(id_prop, type_prop, value_temp)
+                    print("ch", changed)
+                    if changed:
+                        self.PROPERTY[num]["value"] = value_temp
+
+                        #print("before")
+                        #print(self.PROPERTY)
+
+                        #print("after")
+                        #print(self.PROPERTY)
+                    #else:
+                    #    print("Device is Busy")
+                    #    d = {}
+                    #    d[smac_keys["ID_DEVICE"]] = config.ID_DEVICE
+                    #    d[smac_keys["VALUE"]] = 5
+                        #client.send_message(frm=config.ID_DEVICE, to="#", cmd=smac_keys["CMD_DEVICE_BUSY"], message=d, udp=True, tcp=False)
+            await asyncio.sleep(.1)
+
 
     async def interval(self):
         await asyncio.sleep(0)
@@ -416,7 +465,7 @@ class smacInit():
         while 1:
             #print(self.PROPERTY)
 
-            for num, prop in enumerate(self.PROPERTY):
+            '''for num, prop in enumerate(self.PROPERTY):
                 #print("\n\n\n")
                 value = prop["value"]
                 if type(value) == str:
@@ -459,7 +508,7 @@ class smacInit():
                         d = {}
                         d[smac_keys["ID_DEVICE"]] = config.ID_DEVICE
                         d[smac_keys["VALUE"]] = 5
-                        #client.send_message(frm=config.ID_DEVICE, to="#", cmd=smac_keys["CMD_DEVICE_BUSY"], message=d, udp=True, tcp=False)
+                        #client.send_message(frm=config.ID_DEVICE, to="#", cmd=smac_keys["CMD_DEVICE_BUSY"], message=d, udp=True, tcp=False)'''
 
             #print(COUNTER)
             #print(COUNTER % (2*config.INTERVAL_ONLINE) )
@@ -483,10 +532,10 @@ class smacInit():
                     client.ZMQ_REQ = []
                 #if client.DEVICE_BUSY:
                     print("Device is Busy Due to Network Load")
-                    #d = {}
-                    #d[smac_keys["ID_DEVICE"]] = config.ID_DEVICE
-                    #d[smac_keys["VALUE"]] = 5
-                    #client.send_message(frm=config.ID_DEVICE, to="#", cmd=smac_keys["CMD_DEVICE_BUSY"], message=d, udp=True, tcp=False)
+                    d = {}
+                    d[smac_keys["ID_DEVICE"]] = config.ID_DEVICE
+                    d[smac_keys["VALUE"]] = 5
+                    client.send_message(frm=config.ID_DEVICE, to="#", cmd=smac_keys["CMD_DEVICE_BUSY"], message=d, udp=True, tcp=False)
                 else:
                     if client.DEVICE_BUSY:
                         client.DEVICE_BUSY = False
@@ -649,6 +698,11 @@ class smacInit():
             timer = machine.Timer(0)
             timer.init(period=60000, mode=machine.Timer.ONE_SHOT, callback=handleInterrupt)
 
+        if not wifi_client.wlan.isconnected():
+            mode = 2
+            config.update_config_variable(key="mode", value=mode)
+            machine.reset()
+
         #await asyncio.sleep(2)
 
 
@@ -743,7 +797,9 @@ class smacInit():
             t3 = asyncio.create_task(self.subscribe_topics())
             t1 = asyncio.create_task(client.main())
             t2 = asyncio.create_task(self.interval())
+            t4 = asyncio.create_task(self.interval2())
             #t3 = asyncio.create_task(self.test_pins())
+            await t4
             await t3
             await t2
             await t1

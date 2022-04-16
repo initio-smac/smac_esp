@@ -90,6 +90,8 @@ class HttpClient:
         ai = ai[0]
         #print(ai)
         s = usocket.socket(ai[0], ai[1], ai[2])
+        s.setblocking(False)
+        #s.settimeout(3)
         try:
             s.connect(ai[-1])
             if proto == 'https:':

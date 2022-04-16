@@ -225,7 +225,8 @@
       console.log("restarting...");
       showInfo("Restarting Device...")
       data = {}
-      data["mode"] = document.getElementById("id_set_mode").value;
+      //data["mode"] = document.getElementById("id_set_mode").value;
+      data["mode"] = 0
       rest_call(url="/restart", method="GET", data=data, refresh_on_success=true)
   };
 

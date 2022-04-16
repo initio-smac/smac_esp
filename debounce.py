@@ -104,13 +104,35 @@ class Delay_ms:
 
 class Switch:
     debounce_ms = 100
-    def __init__(self, pin):
+    pattern_ms = 2500
+    def __init__(self, pin, pattern="101010"):
         self.pin = pin # Should be initialised for input with pullup
         self._open_func = False
         self._close_func = False
         self.switchstate = self.pin.value()  # Get initial state
+
+        self.detected_pattern = ""
+        self.pattern = pattern
+        self.pattern_fn = False
+        self.pattern_args = False
+        self.is_checking_pattern = False
+
         asyncio.create_task(self.switchcheck())  # Thread runs forever
         #print("loop created")
+
+    def check_pattern(self):
+        #self.is_checking_pattern = True
+        #pat = "".join(self.detected_pattern)
+        pat = self.detected_pattern
+        print("detected pattern ", pat)
+        if ( len(pat) >= len(self.pattern) ) and ( pat[ :len(self.pattern) ] == self.pattern) : 
+            print("pattern matched")
+            if self.pattern_fn:
+                launch(self.pattern_fn, self.pattern_args)
+        else:
+            print("pattern not matched")
+        self.detected_pattern = ""
+        self.is_checking_pattern = False
 
     def open_func(self, func, args=()):
         self._open_func = func
@@ -126,9 +148,17 @@ class Switch:
 
     async def switchcheck(self):
         #print("switch check")
+        if self.pattern_fn:
+            pp = Delay_ms(self.check_pattern)
         while True:
             state = self.pin.value()
             if state != self.switchstate:
+                if self.pattern_fn:
+                    if not self.is_checking_pattern: # check if already checking pattern, if not start checking for a pattern
+                        self.is_checking_pattern = True
+                        pp.trigger(Pushbutton.pattern_ms) 
+                    s = "1" if state else "0"
+                    self.detected_pattern += s
                 # State has changed: act on it now.
                 self.switchstate = state
                 if state == 0 and self._close_func:
@@ -138,6 +168,7 @@ class Switch:
             # Ignore further state changes until switch has settled
             # See https://github.com/peterhinch/micropython-async/issues/69
             await asyncio.sleep_ms(Switch.debounce_ms)
+
 
 # An alternative Pushbutton solution with lower RAM use is available here
 # https://github.com/kevinkk525/pysmartnode/blob/dev/pysmartnode/utils/abutton.py
@@ -174,7 +205,7 @@ class Pushbutton:
         #pat = "".join(self.detected_pattern)
         pat = self.detected_pattern
         print("detected pattern ", pat)
-        if pat == self.pattern:
+        if ( len(pat) >= len(self.pattern) ) and ( pat[ :len(self.pattern) ] == self.pattern) : 
             print("pattern matched")
             if self.pattern_fn:
                 launch(self.pattern_fn, self.pattern_args)
@@ -231,7 +262,7 @@ class Pushbutton:
                 #print(self.is_checking_pattern)
                 #print(self.detected_pattern)
                 if self.pattern_fn:
-                    if not self.is_checking_pattern:
+                    if not self.is_checking_pattern: # check if already checking pattern, if not start checking for a pattern
                         self.is_checking_pattern = True
                         pp.trigger(Pushbutton.pattern_ms) 
 

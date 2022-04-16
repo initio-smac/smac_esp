@@ -407,14 +407,17 @@ class SMACClient():
                     #print(d)
                     topic = d[0]
                     msg = d[1]
-                    #print(topic)
+                    #if msg[-1] == "\n":
+                    #    msg = msg[:-1]
+                    print(topic)
+                    print(msg)
                     #print(self.SUB_TOPIC)
                     #print(topic in self.SUB_TOPIC)
                     if (topic in self.SUB_TOPIC) and (topic not in self.BLOCKED_LIST):
                         try:
                             self.process_message(topic, msg, "UDP")
-                        except:
-                            pass
+                        except Exception as e:
+                            print("Exception while processing UDP msg ", msg)
                     #    del self.UDP_REQ[num]
                     #else:
                     #    self.UDP_REQ.remove(message)
@@ -480,7 +483,7 @@ class SMACClient():
                 #print(len(self.UDP_REQ))
                 #print(self.UDP_MAX_MSGS)
                 #if len(self.UDP_REQ) < self.UDP_MAX_MSGS:
-                data, addr = self.udp_sock.recvfrom(self.MAX_BUFFER)
+                data, addr = self.udp_sock.recvfrom(self.MAX_BUFFER*2)
                 if not self.DEVICE_BUSY:
                     d = data.decode("utf-8")
                     self.UDP_REQ.append(d)

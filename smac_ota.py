@@ -3,11 +3,13 @@ import gc
 from machine import Pin
 import machine
 
-from http_client import HttpClient
-import utime
+from http_client_async import HttpClient
+#import utime
+import uasyncio as asyncio
 import utarfile
 import uos
 from DEVICE.config import config
+import ujson as json
 
 # tar creation
 # tar -cf <name.tar> <file1> <file2> <dir1> <dir2>
@@ -39,7 +41,7 @@ class TarExtracter:
 
 class SmacOTA:
     client = HttpClient()
-    SMAC_NEW_UPDATE_URL = "https://smacsystem.com/download/esp32/"
+    SMAC_NEW_UPDATE_URL = "http://smacsystem.com/download/esp32/"
     DOWNLOAD_COMPLETE = 0
     CHUNK_SIZE = 512
 
@@ -52,26 +54,32 @@ class SmacOTA:
             utime.sleep(.5)
         led.off()
 
-    def get_update_version(self, cur_version):
+    async def get_update_version(self, cur_version):
         gc.collect()
         print("checking for updates...")
         FILENAME =  "version.json"
         url = self.SMAC_NEW_UPDATE_URL + FILENAME
+        await asyncio.sleep(0)
         try:
-            resp = self.client.request(method="GET", url=url)
+            resp = await self.client.request(method="GET", url=url)
             #resp = request(method="GET", url=url)
             status = resp.status_code
-            dat = resp.json()
-            print(status)
+            print(resp.data)
+            print(resp.status_code)
             print(resp.reason)
-            print(dat)
-            if resp.status_code == 200:
-                ver =  int(dat["version"])
-                print(ver)
-                print(int(cur_version))
-                if( ver > int(cur_version) ):
-                    return dat["version"]
-
+            try:
+                dat = json.loads(resp.data)
+                print(status)
+                
+                print(dat)
+                if resp.status_code == 200:
+                    ver =  int(dat["version"])
+                    print(ver)
+                    print(int(cur_version))
+                    if( ver > int(cur_version) ):
+                        return dat["version"]
+            except Exception as e:
+                print("error while decoding version file ", e)
             return -1
         except Exception as e:
             print("Error while checking for updates", e)
@@ -79,7 +87,7 @@ class SmacOTA:
 
 
 
-    def download_update(self, version):
+    async def download_update(self, version):
         print("downloading software2...")
         self.DOWNLOAD_COMPLETE = 0
         FILENAME = "{}_v{}.tar".format(SMAC_BOARD, version)
@@ -90,9 +98,11 @@ class SmacOTA:
         #import _thread
         #_thread.start_new_thread(cn.blink_led, ())
         #_thread.start_new_thread(self.toggle_pin, (2,))
+        await asyncio.sleep(0)
         try:
-            resp = self.client.request(method="GET", url=url, saveToFile=FILENAME)
+            resp = await self.client.request(method="GET", url=url, saveToFile=FILENAME)
             if resp.status_code == 200:
+                print("Download complete. Extracting tar file")
                 gc.collect()
                 ext = TarExtracter()
                 ext.extract(FILENAME)
@@ -105,7 +115,7 @@ class SmacOTA:
         except Exception as e:
             print("Error while downloadin update", e)
             self.DOWNLOAD_COMPLETE = 1
-        utime.sleep(2)
+        await asyncio.sleep(2)
         config.update_config_variable(key="mode", value=0)
         machine.reset()
 

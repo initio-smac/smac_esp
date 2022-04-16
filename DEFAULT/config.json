@@ -3,8 +3,8 @@
     "mode": 0,
     "download_software": 0,
     "wifi_config_1": {
-        "ssid": "initioenergy_act",
-        "password": "Smacsystem@6"
+        "ssid": "",
+        "password": ""
     },
     "wifi_config_2": {
         "ssid": "",

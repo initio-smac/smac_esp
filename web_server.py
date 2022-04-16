@@ -63,7 +63,7 @@ def tf():
     print("starting tf1")
     print("starting tf2")
     from urequests import request
-    resp = request(method="GET", url="https://smacsystem.com/download/esp32/version.json")
+    resp = request(method="GET", url="http://smacsystem.com/download/esp32/version.json")
     #resp = http_get(url="https://smacsystem.com/download/esp32/version.json", port=443)
     print("resp")
     print(resp.json())
