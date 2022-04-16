@@ -8,6 +8,7 @@ import machine
 import json
 from DEVICE.config import config
 from smac_ota import smacOTA
+from DEVICE.smac_device_keys import SMAC_PROPERTY
 
 
 
@@ -81,6 +82,7 @@ async def get_head(conn):
 async def on_new_connection(reader, writer, *args):
     print("new connection")
     print(args)
+    gc.collect()
     req = await get_head(reader)
     req = req.decode('utf-8')
 
@@ -112,6 +114,23 @@ async def on_new_connection(reader, writer, *args):
     response = ""
     if http_path == "/":
         response = open("html/index.html", "r").read()
+        #response = open("html/properties.html", "r").read()
+    elif http_path == "/subscriptions":
+        response = open("html/subscriptions.html", "r").read()
+    elif http_path == "/updates":
+        response = open("html/updates.html", "r").read()
+    elif http_path == "/wifi_connection":
+        response = open("html/wifi_connection.html", "r").read()
+    elif http_path == "/common.js":
+        response = open("html/common.js", "r").read()
+    elif http_path == "/properties.js":
+        response = open("html/properties.js", "r").read()
+    elif http_path == "/subscriptions.js":
+        response = open("html/subscriptions.js", "r").read()
+    elif http_path == "/updates.js":
+        response = open("html/updates.js", "r").read()
+    elif http_path == "/wifi_connection.js":
+        response = open("html/wifi_connection.js", "r").read()
     elif http_path == "/scripts.js":
         response = open("html/scripts.js", "r").read()
     elif http_path.find("/upload_software_file") != -1:
@@ -136,13 +155,35 @@ async def on_new_connection(reader, writer, *args):
     elif http_path.find("/load_config") != -1:
         con = open("DEVICE/config.json", "r").read()
         c = json.loads(con)
+        #c["sub_topic"] = []
+        #c["block_topic"] = []
         try:
             rssi = wifi_client.wlan.status('rssi')
             c["connected_ssid"] = wifi_client.wlan.config('essid')
             c["connected_ssid_strength"] = rssi + 135
         except Exception as e:
             pass
+        #c["props"] = 
+        #with open("DEVICE/device.json", "r") as f:
+        #    try:
+        #        d = json.loads(f.read())
+        #        c["props"] = d
+        #        f.close()
+        #    except:
+        #        pass
         response = json.dumps(c)
+    elif http_path.find("/load_properties") != -1:
+        d =config.PROPERTY
+        for i in d:
+            i["value"] = config.PROP_INSTANCE[ i["id_property"]].value()
+
+        response = json.dumps(d)
+    elif http_path.find("/change_property") != -1:
+        print(params)
+        id_prop = params["id_property"]
+        type_prop = params["type_property"]
+        value= int(params["value"])
+        set_property(id_prop, type_prop, value)
     elif http_path.find("/update_wifi") != -1:
         print("update wifi")
         conn1 = params["connection"]
@@ -262,6 +303,7 @@ async def on_new_connection(reader, writer, *args):
         writer.close()
         await writer.wait_closed()
         gc.collect()
+        await asyncio.sleep(1)
     except Exception as e:
         print("Error while serving: {}".format(e))
 
@@ -270,11 +312,54 @@ async def tt():
     while 1:
         await asyncio.sleep(1)
 
+def set_property(id_prop, type_prop, value):
+        print("TYPE_PROP", type_prop)
+        print(type_prop == SMAC_PROPERTY["FAN"])
+        if config.PROP_INSTANCE.get(id_prop, None) != None:
+    #try:
+            if type_prop == SMAC_PROPERTY["SWITCH"]:
+                #config.update_config_variable(key=id_prop, value=value)
+                if value:
+                    config.PROP_INSTANCE[id_prop].on()
+                else:
+                    config.PROP_INSTANCE[id_prop].off()
+                return True
+            if type_prop == SMAC_PROPERTY["FAN"]:
+                print("VAL:", value)
+                config.PROP_INSTANCE[id_prop].change_speed(value)
+                return True
+
+async def interval2():
+    await asyncio.sleep(0)
+    print("PROP ", config.PROPERTY)
+    while 1:
+        for num, prop in enumerate(config.PROPERTY):
+            #print("\n\n\n")
+            value = prop["value"]
+            if type(value) == str:
+                value = int(value)
+            id_prop = prop["id_property"]
+            type_prop = prop["type_property"]
+            value_temp = config.get_config_variable(key=id_prop)
+            #print("val :", value)
+            #print("val temp :", value_temp)
+            if value_temp == None:
+                value_temp = 0
+            if value_temp != value:
+                print("\n\n\n")
+                print("value_temp", value_temp)
+                print("value", value)
+                changed = set_property(id_prop, type_prop, value_temp)
+                print("ch", changed)
+                if changed:
+                    config.PROPERTY[num]["value"] = value_temp
+        await asyncio.sleep(0)
+
 async def main():
-#    #t2 = asyncio.create_task(tt())
+    t2 = asyncio.create_task(interval2())
     print("starting server")
     t1 = asyncio.create_task( start_server() )
-#    await t2
+    await t2
     await t1
 
 async def start_server():
@@ -283,6 +368,7 @@ async def start_server():
 #asyncio.run( main() )
     loop = asyncio.get_event_loop()
     loop.create_task(asyncio.start_server(on_new_connection, "0.0.0.0", 80))
+    #loop.run_until_complete( interval2() )
     try: 
         loop.run_forever()
     except KeyboardInterrupt:

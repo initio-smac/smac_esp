@@ -2,16 +2,17 @@ import json
 import machine
 import time
 import gc
-gc.enable()
+#gc.enable()
 import uasyncio as asyncio
 
 from DEVICE.smac_devices import SmacFan, SmacSwitch
-from DEVICE.smac_device_keys import SMAC_DEVICES, SMAC_PROPERTY
+from DEVICE.smac_device_keys import SMAC_PROPERTY
+#from DEVICE.smac_keys import smac_keys
 from DEVICE.config import config
 config.load_config_variable()
 
 RESET_BUTTON = 26
-PROPERTY = {}
+#PROPERTY = {}
 
 try:
     #import DEVICE.config as cn
@@ -74,7 +75,8 @@ def init_reset_func():
     with open("DEVICE/device.json", "r") as f:
         try:
             f1 = json.loads(f.read())
-            PROPERTY = f1
+            #global PROPERTY
+            config.PROPERTY = f1
             for p in f1:
                 #print(p)
                 id_prop = p["id_property"]
@@ -105,54 +107,7 @@ def init_reset_func():
         gc.collect()
         f.close()
 
-async def interval2():
-    await asyncio.sleep(0)
-    while 1:
-        for num, prop in enumerate(PROPERTY):
-            #print("\n\n\n")
-            value = prop["value"]
-            if type(value) == str:
-                value = int(value)
-            id_prop = prop["id_property"]
-            type_prop = prop["type_property"]
-            value_temp = config.get_config_variable(key=id_prop)
-            if value_temp == None:
-                value_temp = 0
-            #print(prop)
-            #print("num", num)
-            #print(prop)
-            #print(value)
-            #print(value_temp)
-            if value_temp != value:
-                print("\n\n\n")
-                #lastUpdated_time = config.get_config_variable(key=str(id_prop) + "_time")
-                #if lastUpdated_time == None:
-                #    lastUpdated_time = time.time()
-                #t_diff = time.time() - lastUpdated_time
-                #print(id_prop)
-                #print(type_prop)
-                #print(type(type_prop))
-                print("value_temp", value_temp)
-                print("value", value)
-                #print("t_diff", t_diff)
-                #if t_diff > .2:
-                changed = self.set_property(id_prop, type_prop, value_temp)
-                print("ch", changed)
-                if changed:
-                    PROPERTY[num]["value"] = value_temp
 
-                    #print("before")
-                    #print(self.PROPERTY)
-
-                    #print("after")
-                    #print(self.PROPERTY)
-                #else:
-                #    print("Device is Busy")
-                #    d = {}
-                #    d[smac_keys["ID_DEVICE"]] = config.ID_DEVICE
-                #    d[smac_keys["VALUE"]] = 5
-                    #client.send_message(frm=config.ID_DEVICE, to="#", cmd=smac_keys["CMD_DEVICE_BUSY"], message=d, udp=True, tcp=False)
-        await asyncio.sleep(0)
 
 async def start_web_server():
     import web_server_async
@@ -163,9 +118,9 @@ async def start_web_server():
 
 async def start_smac_client():
     from DEVICE.start import cli
-    t1 = asyncio.create_task(interval2())
+    #t1 = asyncio.create_task(interval2())
     t2 = asyncio.create_task( cli.start() )
-    await t1
+    #await t1
     await t2
 
 # run functions
@@ -173,15 +128,16 @@ MODE = config.MODE
 print("MODE", MODE)
 init_reset_func()
 #MODE = 2
-if MODE == 3:
-    import wifi_ap
-    wifi_ap.wlan_ap.active(True)
-    print("Webrepl Mode")
-elif MODE == 0:
+#if MODE == 3:
+#    import wifi_ap
+#    wifi_ap.wlan_ap.active(True)
+#    print("Webrepl Mode")
+if MODE == 0:
     # import wifi_ap
     # import wifi_client
     # wifi_client.init(setup_AP=False)
     # set_internet_time()
+    #from DEVICE.smac_client import client
     try:
         asyncio.run( start_smac_client() )
     except Exception as e:
@@ -197,7 +153,7 @@ elif MODE == 2:
         #asyncio.run( start_web_server() )
         pass
     except Exception as e:
-        print("Exception while initiating APP", e)
+        print("Exception while initiating Web", e)
         #import uasyncio as asyncio
         asyncio.run(my_app())
     '''from urequests import request

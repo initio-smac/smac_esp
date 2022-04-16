@@ -93,6 +93,10 @@ class SmacSwitch:
 			print(val)
 			config.update_config_variable(key=self.ID_PROP, value=val)
 			config.update_config_variable(key=str(self.ID_PROP) + "_time", value=time.time())
+			if val:
+				config.PROP_INSTANCE[self.ID_PROP].on()
+			else:
+				config.PROP_INSTANCE[self.ID_PROP].off()
 
 
 class Geyser(SmacSwitch):

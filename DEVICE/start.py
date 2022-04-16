@@ -91,7 +91,7 @@ class smacInit():
                 else:
                     client.send_message(frm=config.ID_DEVICE, to=t[0], cmd=smac_keys["CMD_SEND_INFO"], message=m, udp=False, tcp=True)
                 
-                for p in self.PROPERTY:
+                for p in config.PROPERTY:
                     #print(p)
                     p1 = {}
                     p1[ smac_keys["PROPERTY"] ] = 1
@@ -410,7 +410,7 @@ class smacInit():
     async def interval2(self):
         await asyncio.sleep(0)
         while 1:
-            for num, prop in enumerate(self.PROPERTY):
+            for num, prop in enumerate(config.PROPERTY):
                 #print("\n\n\n")
                 value = prop["value"]
                 if type(value) == str:
@@ -441,7 +441,7 @@ class smacInit():
                     changed = self.set_property(id_prop, type_prop, value_temp)
                     print("ch", changed)
                     if changed:
-                        self.PROPERTY[num]["value"] = value_temp
+                        config.PROPERTY[num]["value"] = value_temp
 
                         #print("before")
                         #print(self.PROPERTY)
@@ -462,7 +462,7 @@ class smacInit():
         COUNTER = 0
         print("INTERVAL", config.INTERVAL_ONLINE)
         print(type(config.INTERVAL_ONLINE))
-        print(self.PROPERTY)
+        #print(config.PROPERTY)
         while 1:
             #print(self.PROPERTY)
 
@@ -602,33 +602,33 @@ class smacInit():
             await asyncio.sleep(1)
 
     def set_property(self, id_prop, type_prop, value):
-            print("TYPE_PROP", type_prop)
-            print(type_prop == SMAC_PROPERTY["FAN"])
-            if config.PROP_INSTANCE.get(id_prop, None) != None:
-        #try:
-                if type_prop == SMAC_PROPERTY["SWITCH"]:
-                    #config.update_config_variable(key=id_prop, value=value)
-                    if value:
-                        config.PROP_INSTANCE[id_prop].on()
-                    else:
-                        config.PROP_INSTANCE[id_prop].off()
-                    d = {}
-                    d[smac_keys["ID_PROPERTY"]] = id_prop
-                    d[smac_keys["ID_DEVICE"]] = config.ID_DEVICE
-                    d[smac_keys["VALUE"]] = value
-                    client.send_message(frm=config.ID_DEVICE, to="#", message=d, cmd=smac_keys["CMD_STATUS_SET_PROPERTY"],
-                                        udp=True, tcp=True)
-                    return True
-                if type_prop == SMAC_PROPERTY["FAN"]:
-                    print("VAL:", value)
-                    config.PROP_INSTANCE[id_prop].change_speed(value)
-                    d = {}
-                    d[smac_keys["ID_PROPERTY"]] = id_prop
-                    d[smac_keys["ID_DEVICE"]] = config.ID_DEVICE
-                    d[smac_keys["VALUE"]] = value
-                    client.send_message(frm=config.ID_DEVICE, to="#", message=d, cmd=smac_keys["CMD_STATUS_SET_PROPERTY"],
-                                        udp=True, tcp=True)
-                    return True
+        print("TYPE_PROP", type_prop)
+        print(type_prop == SMAC_PROPERTY["FAN"])
+        if config.PROP_INSTANCE.get(id_prop, None) != None:
+    #try:
+            if type_prop == SMAC_PROPERTY["SWITCH"]:
+                #config.update_config_variable(key=id_prop, value=value)
+                if value:
+                    config.PROP_INSTANCE[id_prop].on()
+                else:
+                    config.PROP_INSTANCE[id_prop].off()
+                d = {}
+                d[smac_keys["ID_PROPERTY"]] = id_prop
+                d[smac_keys["ID_DEVICE"]] = config.ID_DEVICE
+                d[smac_keys["VALUE"]] = value
+                client.send_message(frm=config.ID_DEVICE, to="#", message=d, cmd=smac_keys["CMD_STATUS_SET_PROPERTY"],
+                                    udp=True, tcp=True)
+                return True
+            if type_prop == SMAC_PROPERTY["FAN"]:
+                print("VAL:", value)
+                config.PROP_INSTANCE[id_prop].change_speed(value)
+                d = {}
+                d[smac_keys["ID_PROPERTY"]] = id_prop
+                d[smac_keys["ID_DEVICE"]] = config.ID_DEVICE
+                d[smac_keys["VALUE"]] = value
+                client.send_message(frm=config.ID_DEVICE, to="#", message=d, cmd=smac_keys["CMD_STATUS_SET_PROPERTY"],
+                                    udp=True, tcp=True)
+                return True
         #except Exception as e:
         #    print("Exception during set_property: {}".format(e) )
 
@@ -691,13 +691,13 @@ class smacInit():
             #wifi_ap.wlan_ap.active(True)
         else:
             import wifi_ap
-            wifi_client.init(setup_AP=True)
+            wifi_client.init(setup_AP=False)
 
-            def handleInterrupt(timer):
-                wifi_ap.wlan_ap.active(False)
+            #def handleInterrupt(timer):
+            #    wifi_ap.wlan_ap.active(False)
 
-            timer = machine.Timer(0)
-            timer.init(period=60000, mode=machine.Timer.ONE_SHOT, callback=handleInterrupt)
+            #timer = machine.Timer(0)
+            #timer.init(period=60000, mode=machine.Timer.ONE_SHOT, callback=handleInterrupt)
 
         if not wifi_client.wlan.isconnected():
             mode = 2
@@ -749,11 +749,11 @@ class smacInit():
             except Exception as e:
                 print("Internet Time not Set", e)
                 self.TIME_SYNC = False
-            with open("DEVICE/device.json", "r") as f:
-                try:
-                    f1 = json.loads(f.read())
-                    self.PROPERTY = f1
-                    '''for p in f1:
+            '''#with open("DEVICE/device.json", "r") as f:
+            #    try:
+            #       f1 = json.loads(f.read())
+            #        config.PROPERTY = f1
+                    for p in f1:
                         #print(p)
                         id_prop = p["id_property"]
                         type_prop = p["type_property"]
@@ -776,17 +776,17 @@ class smacInit():
                             config.PROP_INSTANCE[id_prop] = SmacSwitch( input_pin=ip_pin[0], output=op_pin[0], value=pre_val, id_property=id_prop )
                         #time.sleep(.1)
                         #await  asyncio.sleep(.1)
-                    print(config.PROP_INSTANCE)'''
+                    print(config.PROP_INSTANCE)
 
-                    '''from machine import Pin
+                    from machine import Pin
                     from debounce import Pushbutton
                     reset_pin = Pin(self.RESET_BUTTON, Pin.IN, Pin.PULL_UP)
                     p1 = Pushbutton(reset_pin)
                     p1.double_func(self.on_dbl_click, ())
-                    p1.long_func(self.on_long_press, ())'''
+                    p1.long_func(self.on_long_press, ())
 
-                except Exception as e:
-                    print("error ip config: {}".format(e))
+            #    except Exception as e:
+            #        print("error ip config: {}".format(e))'''
 
 
         #t1 = asyncio.ensure_future( self.send_test() )
@@ -798,9 +798,9 @@ class smacInit():
             t3 = asyncio.create_task(self.subscribe_topics())
             t1 = asyncio.create_task(client.main())
             t2 = asyncio.create_task(self.interval())
-            #t4 = asyncio.create_task(self.interval2())
+            t4 = asyncio.create_task(self.interval2())
             #t3 = asyncio.create_task(self.test_pins())
-            #await t4
+            await t4
             await t3
             await t2
             await t1

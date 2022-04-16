@@ -107,11 +107,18 @@
 
     <div class="C_block">
         <div  class="C_title"> Version: <span id="id_version"> </span> </div>
-    <div> <br> <br>
+    </div> <br> <br>
 
     <div class="C_block">
         <div  class="C_title"> Device ID: <span id="id_device"> </span> </div>
-    <div> <br> <br>
+    </div> <br> <br>
+
+    
+    <div class="C_block C_prop_container">
+        <div class="C_title"> Properties </div> <br>
+        <div id="id_props">
+        </div>
+    </div>
 
     <div class="C_block">
         <div  class="C_title"> Select Input Type</div>
@@ -120,7 +127,7 @@
             <input type="radio" name="sel_input" value="pushbutton" id="id_ip_sel_pushbtn"> Push Button <br>
             <input type="button" value="update"  id="id_select_input_type">
         </div>
-    <div> <br> <br>
+    </div> <br> <br>
 
     <div class="C_block">
         <div  class="C_title"> Blocked Topics </div>
@@ -130,21 +137,21 @@
 
         </div>
         <input type="button" value="remove"  id="id_remove_blocked_topic">
-    <div> <br> <br>
+    </div> <br> <br>
 
     <div class="C_block">
         <div id="id_conn1" class="C_title"> Connection: 1 </div> <br>
         <input type="text" placeholder="wifi_ssid" id="id_wifi_ssid_1"> <br>
         <input type="text" placeholder="wifi_password" id="id_wifi_password_1"> <br>
         <input type="button" value="update"  id="id_wifi_submit_1">
-    <div> <br>
+    </div> <br>
 
     <div class="C_block">
         <div id="id_conn2" class="C_title"> Connection: 2 </div> <br>
         <input type="text" placeholder="wifi_ssid" id="id_wifi_ssid_2"> <br>
         <input type="text" placeholder="wifi_password" id="id_wifi_password_2"> <br>
         <input type="button" value="update"  id="id_wifi_submit_2">
-    <div> <br>
+    </div> <br>
 
 
     <div class="C_block">
@@ -152,19 +159,19 @@
         <input type="text" placeholder="AP ssid" id="id_ap_ssid"> <br>
         <input type="text" placeholder="AP password" id="id_ap_password"> <br>
         <input type="button" value="update"  id="id_ap_submit">
-    <div> <br>
+    </div> <br>
 
     <div class="C_block">
         <div id="id_pin_device_wrapper" class="C_title"> PIN Device </div> <br>
         <input type="text" placeholder="PIN" id="id_text_pin_device"> <br>
         <input type="button" value="update"  id="id_update_pin_device">
-    <div> <br>
+    </div> <br>
 
     <div class="C_block">
         <div id="id_name_device_wrapper" class="C_title"> Name Device </div> <br>
         <input type="text" placeholder="Device Name" id="id_text_name_device"> <br>
         <input type="button" value="update"  id="id_update_name_device">
-    <div> <br>
+    </div> <br>
 
     <div class="C_topic_wrapper C_block"  style="">
         <div class="C_title" > Subscribed Homes </div> <br>
@@ -197,6 +204,7 @@
 
 </div>
 
+<script type="text/javascript" src="common.js"></script>
 <script src="scripts.js"></script>
 <script>
     
