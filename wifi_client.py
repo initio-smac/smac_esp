@@ -40,32 +40,37 @@ def init(setup_AP=False):
     try:
         #arr = wlan.scan()
         #print(arr)
-        print("Connecting to WIFI_CONIG_1:{}".format(config.WIFI_CONFIG_1["ssid"]))
-        conn1 = wifi_connect(config.WIFI_CONFIG_1["ssid"], config.WIFI_CONFIG_1["password"])
+        w_config = config.DATA["wifi_config_1"]
+        print("Connecting to WIFI_CONIG_1:{}".format(w_config["ssid"]))
+        conn1 = wifi_connect(w_config["ssid"], w_config["password"])
         print("conn1", conn1)
 
-        WIFI_NAME = ""
-        if not conn1:
-            print("Connecting to WIFI_CONIG_2:{}".format(config.WIFI_CONFIG_2["ssid"]))
+        #WIFI_NAME = ""
+        #if not conn1:
+            #print("Connecting to WIFI_CONIG_2:{}".format(config.WIFI_CONFIG_2["ssid"]))
             #time.sleep(5)
-            conn2 = wifi_connect(config.WIFI_CONFIG_2["ssid"], config.WIFI_CONFIG_2["password"])
-            if conn2:
-                WIFI_NAME = config.WIFI_CONFIG_2["ssid"]
-        else:
-            WIFI_NAME = config.WIFI_CONFIG_1["ssid"]
+            
+            #conn2 = wifi_connect(config.WIFI_CONFIG_2["ssid"], config.WIFI_CONFIG_2["password"])
+            #if conn2:
+            #    WIFI_NAME = config.WIFI_CONFIG_2["ssid"]
+        #else:
+        #    WIFI_NAME = w_config["ssid"]
 
-        id_device = config.get_config_variable(key="id_device")
+        id_device = config.ID_DEVICE
         #AP_TEXT = ""
         #wlan_ap = network.WLAN(network.AP_IF)
         if wlan.isconnected():
             print("connected")
             print( wlan.ifconfig() )
-            AP_TEXT = "SMAC_{}_{}".format(id_device, WIFI_NAME)
+            AP_TEXT = "SMAC_{}_{}".format(id_device, w_config["ssid"])
         else:
             AP_TEXT = "SMAC_{}_NO_CONNECTION".format(id_device)
             #wlan_ap.config(essid=)
+        print(AP_TEXT)
+        print(setup_AP)
         if(setup_AP):
-            from wifi_ap import wlan_ap
-            wlan_ap.config(essid=AP_TEXT)
+            import wifi_ap
+            wifi_ap.setup_ap(ssid=AP_TEXT, password=None)
+            #config.update_config_variable(key="ap_config", value={"ssid": AP_TEXT, "password": ""})
     except Exception as e:
         print("wlan station connect error: {}".format(e))

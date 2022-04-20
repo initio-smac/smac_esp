@@ -126,8 +126,9 @@ class SMACClient():
         t = topic 
         print("subscribed to {}".format(t) )
         tt = bytes('\x00', "utf-8") + bytes( [ len(t)+1 ] ) + bytes('\x01', "utf-8") + bytes( t , "utf-8")
+        #tt = b"\x00{}\x01{}".format( len(t)+1, t )
         print(tt)
-        self.zmq_sub_writer.write(tt)
+        self.zmq_sub_writer.write( tt )
         await self.zmq_sub_writer.drain()
         
         
@@ -135,7 +136,8 @@ class SMACClient():
         topic  = str(topic)
         t = topic 
         tt = bytes('\x00',"utf-8") + bytes( [ len(t)+1 ] )  + bytes('\x00', "utf-8") + bytes( t , "utf-8")
-        self.zmq_sub_writer.write(tt)
+        #tt = b"\x00{}\x00{}".format( len(t)+1, t )
+        self.zmq_sub_writer.write( tt )
         await self.zmq_sub_writer.drain()
         print(tt)
         print("unsubscribed to {}".format(t))
@@ -232,7 +234,7 @@ class SMACClient():
                     m = bytearray("\x02{}{}\n".format(l, msg))
                 else:
                     #print(len(msg))
-                    msg = msg+"\n"
+                    msg = "{}\n".format(msg)
                     m = bytearray("\x00") + bytes([(len(msg))] ) + bytearray(msg)
                     #m = b"\x00\xe0"+ bytearray(msg+"\n")
                     #print(m)
@@ -297,12 +299,15 @@ class SMACClient():
                 #print(data)
                 if (data.startswith( bytes(smac_zmq.zGreetingSig) )) : #Found zmq Greeting
                     print("Got ZMQ Greeting!")
-                    self.zmq_pub_writer.write(smac_zmq.zGreetingVerMajor+smac_zmq.zGreetingVerMinor)
+                    self.zmq_pub_writer.write(smac_zmq.zGreeting1_pub)
+                    #self.zmq_pub_writer.write(smac_zmq.zGreetingVerMajor+smac_zmq.zGreetingVerMinor)
                     await self.zmq_pub_writer.drain()
                     print("ZMQ Ver/Mech")   
-                    self.zmq_pub_writer.write(smac_zmq.zGreetingMech+smac_zmq.zGreetingEnd)    
-                    await self.zmq_pub_writer.drain()          
-                    self.zmq_pub_writer.write(smac_zmq.zHandshake1+smac_zmq.zHandshake2+smac_zmq.zHandshake3_pub)
+                    #self.zmq_pub_writer.write(smac_zmq.zGreetingMech+smac_zmq.zGreetingEnd)
+                    self.zmq_pub_writer.write(smac_zmq.zGreeting2_pub)    
+                    await self.zmq_pub_writer.drain()   
+                    #self.zmq_pub_writer.write(smac_zmq.zHandshake1+smac_zmq.zHandshake2+smac_zmq.zHandshake3_pub)       
+                    self.zmq_pub_writer.write(smac_zmq.zHandshakeAll_pub)
                     await self.zmq_pub_writer.drain()
                 if (b"READY" in data) : #Found READY   
                     print("Ready to Pub")
@@ -341,13 +346,16 @@ class SMACClient():
                     #print(data)
                     if (data.startswith(bytes(smac_zmq.zGreetingSig))): #Found zmq Greeting
                         print("ZMQ Greeting!")
-                        writer.write(smac_zmq.zGreetingSig+smac_zmq.zGreetingVerMajor)
+                        #writer.write(smac_zmq.zGreetingSig+smac_zmq.zGreetingVerMajor)
+                        writer.write(smac_zmq.zGreeting1_sub)
                         await writer.drain()
                     if (b"NULL" in data) : #Found zmq NULL Mechnism
                         print("ZMQ Ver/Mech")   
-                        writer.write(smac_zmq.zGreetingVerMinor+smac_zmq.zGreetingMech+smac_zmq.zGreetingEnd)    
-                        await writer.drain()          
-                        writer.write(smac_zmq.zHandshake1+smac_zmq.zHandshake2+smac_zmq.zHandshake3_sub)
+                        writer.write(smac_zmq.zGreeting2_sub)  
+                        #writer.write(smac_zmq.zGreetingVerMinor+smac_zmq.zGreetingMech+smac_zmq.zGreetingEnd)    
+                        await writer.drain()     
+                        #writer.write(smac_zmq.zHandshake1+smac_zmq.zHandshake2+smac_zmq.zHandshake3_sub)     
+                        writer.write(smac_zmq.zHandshakeAll_sub)
                         await writer.drain()
                     if (b"READY" in data): #Found zmq READY, Send Subscription Start
                         print("ZMQ READY Subscribe")  

@@ -157,5 +157,7 @@ smac_keys={
     'TYPE_TRIGGER'                      :'a15',
     'a15'                               :'TYPE_TRIGGER',
     'CMD_TRIGGER_CONTEXT'                   :'a16',
-    'a16'                               :'CMD_TRIGGER_CONTEXT'
+    'a16'                               :'CMD_TRIGGER_CONTEXT',
+    'CMD_DEVICE_DATA'                   :'a17',
+    'a17'                               :'CMD_DEVICE_DATA',
     }

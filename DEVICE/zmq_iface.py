@@ -26,6 +26,14 @@ class SMACZMQ():
     zSubStart = bytearray(b'\x00\x01\x01')
     #---------------------------------------------------------------------------------
     SUB_ENABLED = False
+    zGreeting1_pub = bytearray(b'\x03\x00')
+    zGreeting2_pub = bytearray(b"NULL") + bytearray(48)
+    zHandshakeAll_pub = bytearray(b'\x04\x19\x05\x52\x45\x41\x44\x59\x0B\x53\x6F\x63\x6B\x65\x74\x2D\x54\x79\x70\x65\x00\x00\x00\x03\x50\x55\x42')
+
+    zGreeting1_sub = bytearray(b'\xFF\x00\x00\x00\x00\x00\x00\x00\x01\x7F\x03')
+    zGreeting2_sub = bytearray(b'\x00NULL') + bytearray(48) 
+    zHandshakeAll_sub = bytearray(b'\x04\x19\x05\x52\x45\x41\x44\x59\x0B\x53\x6F\x63\x6B\x65\x74\x2D\x54\x79\x70\x65\x00\x00\x00\x03\x53\x55\x42')
+    
 
     def __init__(self, *args):
         # create TCP/IP socket

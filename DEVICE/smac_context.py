@@ -10,10 +10,10 @@ def add_action(data, frm):
         actions = config.get_action_all()
         #print("acts",actions)
         #print("acts",actions.keys())
-        print( config.get_config_variable(key="limit_action") )
-        if len(actions) < config.get_config_variable(key="limit_action"):
+        print( config.LIMIT["limit_action"] )
+        if len(actions) < config.LIMIT["limit_action"]:
             passkey = data.get(smac_keys["PASSKEY"])
-            if str(config.PIN_DEVICE) == str(passkey):
+            if str(config.DATA["pin_device"]) == str(passkey):
                 id_topic = data.get(smac_keys["ID_TOPIC"])
                 id_context = data.get(smac_keys["ID_CONTEXT"])
                 name_context = data.get(smac_keys["NAME_CONTEXT"])
@@ -56,7 +56,7 @@ def add_trigger(data, frm):
     print("add trigger")
     print(type_trigger)
 
-    if len(triggers) < config.get_config_variable(key="limit_trigger"):
+    if len(triggers) < config.LIMIT["limit_trigger"]:
         if type_trigger == smac_keys["TYPE_TRIGGER_TIME"]:
             config.add_trigger(id_topic, id_context, id_device, id_property, type_trigger, value)
         elif type_trigger == smac_keys["TYPE_TRIGGER_PROP"]:
@@ -65,7 +65,7 @@ def add_trigger(data, frm):
             print(config.ID_DEVICE)
             if id_device == config.ID_DEVICE:
                 passkey = data.get(smac_keys["PASSKEY"])
-                if str(config.PIN_DEVICE) == str(passkey):
+                if str(config.DATA["pin_device"]) == str(passkey):
                     config.add_trigger(id_topic, id_context, id_device, id_property, type_trigger, value)
                     d1 = {}
                     d1[smac_keys["ID_TOPIC"]] = id_topic
@@ -97,7 +97,7 @@ def remove_action(data, frm):
     id_message = data.get(smac_keys["ID_MESSAGE"])
     if id_device == config.ID_DEVICE:
         passkey = data.get(smac_keys["PASSKEY"])
-        if str(config.PIN_DEVICE) == str(passkey):
+        if str(config.DATA["pin_device"]) == str(passkey):
             id_topic = data.get(smac_keys["ID_TOPIC"])
             id_context = data.get(smac_keys["ID_CONTEXT"])
             id_property = data.get(smac_keys["ID_PROPERTY"])
@@ -133,7 +133,7 @@ def remove_trigger(data, frm):
     elif type_trigger == smac_keys["TYPE_TRIGGER_PROP"]:
         if id_device == config.ID_DEVICE:
             passkey = data.get(smac_keys["PASSKEY"])
-            if str(config.PIN_DEVICE) == str(passkey):
+            if str(config.DATA["pin_device"]) == str(passkey):
                 id_topic = data.get(smac_keys["ID_TOPIC"])
                 id_context = data.get(smac_keys["ID_CONTEXT"])
                 id_property = data.get(smac_keys["ID_PROPERTY"])

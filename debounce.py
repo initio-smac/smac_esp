@@ -105,7 +105,7 @@ class Delay_ms:
 class Switch:
     debounce_ms = 100
     pattern_ms = 2500
-    def __init__(self, pin, pattern="101010"):
+    def __init__(self, pin, pattern=["101010", "010101"]):
         self.pin = pin # Should be initialised for input with pullup
         self._open_func = False
         self._close_func = False
@@ -125,7 +125,7 @@ class Switch:
         #pat = "".join(self.detected_pattern)
         pat = self.detected_pattern
         print("detected pattern ", pat)
-        if ( len(pat) >= len(self.pattern) ) and ( pat[ :len(self.pattern) ] == self.pattern) : 
+        if ( len(pat) >= len(self.pattern) ) and ( pat[ :6 ] in self.pattern) : 
             print("pattern matched")
             if self.pattern_fn:
                 launch(self.pattern_fn, self.pattern_args)
@@ -177,7 +177,7 @@ class Pushbutton:
     long_press_ms = 5000
     double_click_ms = 400
     pattern_ms = 2500
-    def __init__(self, pin, suppress=False, pattern="101010"):
+    def __init__(self, pin, suppress=False, pattern=["101010", "010101"]):
         self.pin = pin # Initialise for input
         self._supp = suppress
         self._dblpend = False  # Doubleclick waiting for 2nd click
@@ -205,7 +205,7 @@ class Pushbutton:
         #pat = "".join(self.detected_pattern)
         pat = self.detected_pattern
         print("detected pattern ", pat)
-        if ( len(pat) >= len(self.pattern) ) and ( pat[ :len(self.pattern) ] == self.pattern) : 
+        if ( len(pat) >= len(self.pattern) ) and ( pat[ :6 ] in self.pattern) : 
             print("pattern matched")
             if self.pattern_fn:
                 launch(self.pattern_fn, self.pattern_args)

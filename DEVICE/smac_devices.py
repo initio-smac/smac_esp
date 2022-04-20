@@ -42,7 +42,7 @@ class SmacSwitch:
 			ip = Pin(int(input_pin), Pin.IN, Pin.PULL_UP)
 			#ip.irq(handler=self.handle_ip_change)
 			#self.input_pin = ip
-			ip_type = config.get_config_variable("input_type")
+			ip_type = config.DATA["input_type"]
 			print("ip type", ip_type)
 			if( ip_type == "pushbutton" ):
 				self.input_pin = Pushbutton(ip)
@@ -77,26 +77,28 @@ class SmacSwitch:
 		return self.output.value()
 
 	def handle_ip_change(self, *args):
-		#if self.value():
-		#	self.off()
-		#else:
-		#	self.on()
+		if self.value():
+			self.off()
+		else:
+			self.on()
 		print("changed", self.value())
 		print(args)
 		print(self.ID_PROP)
-		if self.ID_PROP != None:
+		#if self.ID_PROP != None:
 			#val = 1 - self.value()
-			val = config.get_config_variable(key=self.ID_PROP)
-			if val == None:
-				val = 0
-			val = 1 - val
-			print(val)
-			config.update_config_variable(key=self.ID_PROP, value=val)
-			config.update_config_variable(key=str(self.ID_PROP) + "_time", value=time.time())
-			if val:
-				config.PROP_INSTANCE[self.ID_PROP].on()
-			else:
-				config.PROP_INSTANCE[self.ID_PROP].off()
+			#val = config.get_property_value(key=self.ID_PROP)
+			#if val == None:
+			#	val = 0
+		#	val = 1 - self.value()
+		#	print(val)
+			#config.update_property_value(self.ID_PROP, val)
+			#config.update_property_value(str(self.ID_PROP) + "_time", time.time())
+		#	if val:
+				#config.PROP_INSTANCE[self.ID_PROP].on()
+		#		self.on()
+		#	else:
+				#config.PROP_INSTANCE[self.ID_PROP].off()
+		#		self.off()
 
 
 class Geyser(SmacSwitch):
@@ -126,7 +128,7 @@ class SmacFan:
 			#ip.irq(handler=self.handle_ip_change_fan)
 			#self.input_pin = ip
 			#self.input_pin =  DebouncedSwitch(ip, self.handle_ip_change_fan )
-			ip_type = config.get_config_variable("input_type")
+			ip_type = config.DATA["input_type"]
 			print(input_pin)
 			print(ip_type)
 			if (ip_type == "pushbutton"):
@@ -205,5 +207,6 @@ class SmacFan:
 		#print(self.ID_PROP)
 		if self.ID_PROP != None:
 			val = 0 if (self.speed == self.MAX_SPEED) else (self.speed+1)
-			config.update_config_variable(key=self.ID_PROP, value=val)
-			config.update_config_variable(key=str(self.ID_PROP) + "_time", value=time.time())
+			#config.update_property_value(self.ID_PROP, val)
+			#config.update_property_value(str(self.ID_PROP) + "_time", time.time())
+			self.change_speed(val)

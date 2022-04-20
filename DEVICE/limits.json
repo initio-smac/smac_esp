@@ -1,0 +1,6 @@
+{
+    "limit_property": 4,
+    "limit_topic": 5,
+    "limit_action": 5,
+    "limit_trigger": 5,
+}

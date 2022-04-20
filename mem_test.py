@@ -13,5 +13,5 @@ def free(full=False):
     if not full: return P
     else : return ('Total:{0} Free:{1} ({2})'.format(T,F,P))
 
-print("Flash Memory info: ", df() )
-print("RAM info: ", free(full=True) )
+#print("Flash Memory info: ", df() )
+#print("RAM info: ", free(full=True) )

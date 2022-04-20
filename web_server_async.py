@@ -153,8 +153,13 @@ async def on_new_connection(reader, writer, *args):
     elif http_path.find("/test") != -1:
         response = "Hello world from Socket running on the ESP32"
     elif http_path.find("/load_config") != -1:
-        con = open("DEVICE/config.json", "r").read()
-        c = json.loads(con)
+        #con = open("DEVICE/config.json", "r").read()
+        #c = json.loads(con)
+        c = config.DATA
+        c["id_device"] = config.ID_DEVICE
+        c["type_device"] = config.TYPE_DEVICE
+        c["version"] = config.VERSION
+
         #c["sub_topic"] = []
         #c["block_topic"] = []
         try:
@@ -215,7 +220,7 @@ async def on_new_connection(reader, writer, *args):
     elif http_path.find("/restart_webrepl") != -1:
         #mode = params.get("mode", 0)
         config.update_config_variable(key="mode", value=3)
-        print(config.get_config_variable("mode"))
+        print(config.DATA["mode"])
         machine.reset()
         response = "Restarting Device in WebREPL mode."
     elif http_path.find("/restart") != -1:
@@ -233,7 +238,7 @@ async def on_new_connection(reader, writer, *args):
         #config.update_config_variable(key="mode", value=1)
         #machine.reset()
         print("checking for updates")
-        cur_version = config.get_config_variable(key="version")
+        cur_version = config.VERSION
         new_version = await smacOTA.get_update_version(cur_version)
         print("cur_version ", cur_version)
         print("new_version ", new_version)
@@ -340,7 +345,7 @@ async def interval2():
                 value = int(value)
             id_prop = prop["id_property"]
             type_prop = prop["type_property"]
-            value_temp = config.get_config_variable(key=id_prop)
+            value_temp = config.get_property_value(key=id_prop)
             #print("val :", value)
             #print("val temp :", value_temp)
             if value_temp == None:
@@ -356,13 +361,14 @@ async def interval2():
         await asyncio.sleep(0)
 
 async def main():
-    t2 = asyncio.create_task(interval2())
+    #t2 = asyncio.create_task(interval2())
     print("starting server")
     t1 = asyncio.create_task( start_server() )
-    await t2
+    #await t2
     await t1
 
 async def start_server():
+    print("starting server")
     await asyncio.sleep(0)
     #import DEVICE.wifi_client2
 #asyncio.run( main() )

@@ -12,7 +12,7 @@
       rest_call(url="/update_wifi", method="GET", data=data, refresh_on_success=true)
   };
 
-  document.getElementById("id_wifi_submit_2").onclick = function(){
+  /*document.getElementById("id_wifi_submit_2").onclick = function(){
       var ssid = document.getElementById("id_wifi_ssid_2").value;
       var password = document.getElementById("id_wifi_password_2").value;
       var data = {}
@@ -20,7 +20,7 @@
       data["password"] = password
       data["connection"] = 2
       rest_call(url="/update_wifi", method="GET", data=data, refresh_on_success=true)
-  };
+  };*/
 
   document.getElementById("id_ap_submit").onclick = function(){
       var ssid = document.getElementById("id_ap_ssid").value;

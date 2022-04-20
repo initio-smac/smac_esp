@@ -1,35 +1,17 @@
 {
-    "version": "02",
     "mode": 0,
     "wifi_config_1": {
-        "ssid": "initioenergy_act1",
-        "password": "Smacsystem@61"
-    },
-    "wifi_config_2": {
-        "ssid": "",
-        "password": ""
+        "ssid": "initioenergy_act",
+        "password": "Smacsystem@6"
     },
     "ap_config": {
         "ssid": "SMAC_DEV",
         "password": "password"
     },
-    "id_device": "D2",
     "name_device": "smac_D2",
     "pin_device": "1234",
-    "sub_topic": [ ["T3sddddddddddddddd33333333333333333333333333333333333333333333333333", "H1", "G2"], ["T4ssssssssssssssssssssssssssssssssssssss", "H2", "R3"] ],
+    "sub_topic": [ ["T3", "H1", "G2"] ],
     "interval_online": 20,
-    "limit_device": 10,
-    "limit_topic": 10,
-    "limit_action": 5,
-    "limit_trigger": 5,
     "blocked_topic": ["T1", "T2"],
     "input_type": "switch",
-
-    "test": "asfsdf",
-    "clear": "nmotosfdsdf sdfjsldfkskdfl klskdfl ksldflsdfkasdjfclearl fdljklsdfklmsldfdflmlsd,f;lsdfmdfl m",
-    "celaer2": "sdfjskdjfl skjsldkf jsd sdf skjdfj skdfkjsdfj jsdjfksd kjsfj ksjdfk jksjdkfjk kkjskafj kjsdk jkjks jdf",
-    "aclear": "sdfdf skadfjl s lsdfkpsdfkp  skdf;l  ksldfkhjh lsdfk jlkl ksadf l sdlfj lsdkf lklskdf lsldfjsdkfsdsd l",
-
-
-
 }

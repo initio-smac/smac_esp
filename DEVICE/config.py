@@ -1,83 +1,71 @@
 from DEVICE.smac_device_keys import SMAC_DEVICES
 import json
 
-DEFAULT_CONFIG = '''{
-    "version": "02",
-    "mode": 0,
-    "download_software": 0,
-    "wifi_config_1": {
-        "ssid": "",
-        "password": ""
-    },
-    "wifi_config_2": {
-        "ssid": "",
-        "password": ""
-    },
-    "ap_config": {
-        "ssid": "SMAC_DEV",
-        "password": "password"
-    },
-    "id_device": "D1",
-    "name_device": "smac_D1",
-    "pin_device": "1234",
-    "sub_topic": [ ],
-    "interval_online": 20,
-    "limit_device": 10,
-    "limit_topic": 10,
-    "limit_action": 5,
-    "limit_trigger": 5,
-    "blocked_topic": []
-}'''
-
 
 
 class Config():
-    PROPERTY = []
-    PROP_INSTANCE = {}
-    PROP_TYPE = {}
-    WIFI_CONFIG_1 = {}
-    WIFI_CONFIG_2 = {}
-    AP_CONFIG = {}
-    SUB_TOPIC = []
-    ID_DEVICE = ""
-    NAME_DEVICE = "smac_esp"
-    TYPE_DEVICE = SMAC_DEVICES["ESP"]
-    PIN_DEVICE = "1234"
+    PROPERTY = []  # property properties data(json)
+    PROP_INSTANCE = {} # stores property objects for controlling
+    PROP_TYPE = {} # stores property type of each properties
+    
+    DATA = {
+    	"mode": 0,
+    	"wifi_config_1" : {},
+    	"ap_config": {},
+    	"sub_topic": [],
+    	"blocked_topic": [],
+    	"name_device": "smac_",
+    	"pin_device": "1234",
+    	"input_type": "switch",
+    	"interval_online": 30
+    }
+    TYPE_DEVICE = SMAC_DEVICES["ESP"],
+    #DOWNLOAD_VERSION = None
+    #INTERVAL_ONLINE = 30
+    
     VERSION = "02"
-    MODE = 0
-    DOWNLOAD_VERSION = None
-    INTERVAL_ONLINE = 30
+    ID_DEVICE = ""
     LIMIT = {
-        "LIMIT_DEVICE": 10,
-        "LIMIT_TOPIC": 10
+        "limit_property": 4,
+        "limit_topic": 5,
+        "liit_action": 5,
+        "limit_trigger": 5
     }
 
     def load_config_variable(self):
         try:
-            with open('DEVICE/config.json', "r") as c1:
-                config = json.load(c1)
-                self.WIFI_CONFIG_1 = config['wifi_config_1']
-                self.WIFI_CONFIG_2 = config['wifi_config_2']
-                self.AP_CONFIG = config['ap_config']
-                self.SUB_TOPIC = config["sub_topic"]
-                self.ID_DEVICE = config["id_device"]
-                self.NAME_DEVICE = config["name_device"]
-                self.TYPE_DEVICE = SMAC_DEVICES["ESP"]
-                self.VERSION = config.get("version", "01")
-                self.PIN_DEVICE = config.get("pin_device", "1234")
-                self.MODE = config.get("mode", 0)
-                self.DOWNLOAD_VERSION = config.get("download_version")
-                self.INTERVAL_ONLINE = config.get("interval_online", 60)
-                self.LIMIT["LIMIT_DEVICE"] = config.get("limit_device", 10)
-                self.LIMIT["LIMIT_TOPIC"] = config.get("limit_topic", 10)
+            with open('DEVICE/id_device.txt', "r") as d:
+                self.ID_DEVICE = d.read()
+                d.close()
+        except Exception as e:
+            print("Cant read id_device.txt : ", e)
 
-                #global MODE
-                #print(config.get("mode"))
-                #MODE = config.get("mode", 0)
+        try:
+            with open('DEVICE/version.txt', "r") as v:
+                self.VERSION = v.read()
+                v.close()
+        except Exception as e:
+            print("Cant read version.txt : ", e)
+
+        try:
+            with open('DEVICE/limits.json', "r") as l:
+                self.LIMIT = json.load(l)
+                #self.LIMIT["LIMIT_PROPERTY"] = limits.get("limit_property", 4)
+                #self.LIMIT["LIMIT_TOPIC"] = limits.get("limit_topic", 5)
+                #self.LIMIT["LIMIT_ACTION"] = limits.get("limit_action", 5)
+                #self.LIMIT["LIMIT_TRIGGER"] = limits.get("limit_trigger", 5)
+                l.close()
+        except Exception as e:
+            print("Cant read id_device.txt : ", e)
+
+        try:
+            with open('DEVICE/config.json', "r") as c1:
+                self.DATA = json.load(c1)
                 c1.close()
 
         except Exception as e:
             print("load config vars err:{}".format(e) )
+
 
     def get_config_variable(self, key):
         try:
@@ -89,13 +77,59 @@ class Config():
             print("get config err:{}, key:{}".format(e, key) )
             return None
 
+    def update_version(self, value):
+        try:
+            with open('DEVICE/version.txt', "w") as c1:
+                c1.write(value)
+                self.VERSION = value
+                c1.close()
+                return 
+        except Exception as e:
+            print("get config err:{}, key:{}".format(e, key) )
+            return None
+
+    def get_property_value(self, id_prop):
+        try:
+            with open('DEVICE/property_value.json', "r") as c1:
+                props = json.load(c1)
+                c1.close()
+                return props.get(id_prop, None)
+        except Exception as e:
+            print("get config err:{}, key:{}".format(e, key) )
+            return None
+
+    def update_property_value(self, id_prop, value):
+        try:
+            props = {}
+            with open('DEVICE/property_value.json', "r") as c1:
+                props = json.load(c1)
+                c1.close()
+
+            props[id_prop] = value
+            with open('DEVICE/property_value.json', "w") as c2:
+                c2.write( json.dumps(props) )
+                c2.close()
+        except Exception as e:
+            print(e) 
+
+    def update_property_value_all(self):
+        try:
+            props = {}
+            for id_prop in self.PROP_INSTANCE:
+                props[id_prop] = self.PROP_INSTANCE[id_prop].value()
+            with open('DEVICE/property_value.json', "w") as c2:
+                c2.write( json.dumps(props) )
+                c2.close()
+        except Exception as e:
+            print(e) 
+
     # arr_op = [ ADD, REM]
     def update_config_variable(self, key, value, arr_op="ADD", reload_variables=False):
         try:
-            config = {}
-            with open('DEVICE/config.json', "r") as c1:
-                config = json.load(c1)
-                c1.close()
+            config = self.DATA
+            #with open('DEVICE/config.json', "r") as c1:
+            #    config = json.load(c1)
+            #    c1.close()
 
             with open('DEVICE/config.json', "w") as c2:
                 d = config.copy()
@@ -103,23 +137,28 @@ class Config():
                 if (key == "sub_topic") and (arr_op == "ADD"):
                     if not(value[0] in  [ topic[0] for topic in d[key] ]):
                         d[key] = d[key] + [value]
+                        #self.SUB_TOPIC = d[key]
                 elif (key == "sub_topic") and (arr_op == "REM"):
                     for topic in d[key]:
                         if value == topic[0]:
                             d[key].remove(topic)
+                    #self.SUB_TOPIC = d[key]
                 elif (key == "blocked_topic") and (arr_op == "ADD"):
                     if not (value in d[key]):
                         d[key] = d[key] + [value]
+                     #   self.BLOCKED_TOPIC = d[key]
                 elif (key == "blocked_topic") and (arr_op == "REM"):
                     if value in d[key]:
                         d[key].remove(value)
+                      #  self.BLOCKED_TOPIC = d[key]
                 else:
                     d[key] = value
                 #print(d)
+                self.DATA[key] = d[key]
                 c2.write(json.dumps(d))
                 c2.close()
-            if reload_variables:
-                self.load_config_variable()
+            #if reload_variables:
+            #    self.load_config_variable()
         except Exception as e:
             print("update config err: {}".format(e))
 

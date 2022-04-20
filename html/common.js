@@ -92,13 +92,13 @@ var DATA = {};
                       document.getElementById('id_ap_password').value = jd.ap_config["password"];
                       document.getElementById('id_wifi_ssid_1').value = jd.wifi_config_1["ssid"];
                       document.getElementById('id_wifi_password_1').value = jd.wifi_config_1["password"];
-                      if( connected_ssid == jd.wifi_config_2["ssid"]) {
-                        var conn = document.getElementById("id_conn2");
-                        conn.style.color = "green";
-                        conn.innerHTML = conn.innerHTML + " ("+ strength + "%) ";
-                      }
-                      document.getElementById('id_wifi_ssid_2').value = jd.wifi_config_2["ssid"];
-                      document.getElementById('id_wifi_password_2').value = jd.wifi_config_2["password"];
+                      //if( connected_ssid == jd.wifi_config_2["ssid"]) {
+                      //  var conn = document.getElementById("id_conn2");
+                      //  conn.style.color = "green";
+                      //  conn.innerHTML = conn.innerHTML + " ("+ strength + "%) ";
+                      //}
+                      //document.getElementById('id_wifi_ssid_2').value = jd.wifi_config_2["ssid"];
+                      //document.getElementById('id_wifi_password_2').value = jd.wifi_config_2["password"];
                       document.getElementById('id_text_name_device').value = jd.name_device;
                       document.getElementById('id_text_pin_device').value = jd.pin_device;
 

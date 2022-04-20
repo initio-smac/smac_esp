@@ -106,7 +106,7 @@ class SmacOTA:
                 gc.collect()
                 ext = TarExtracter()
                 ext.extract(FILENAME)
-                config.update_config_variable(key="version", value=version)
+                config.update_version(version)
                 self.DOWNLOAD_COMPLETE = 1
                 print("Software Update is success. Rebooting Device...")
             else:

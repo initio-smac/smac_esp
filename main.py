@@ -36,7 +36,7 @@ def set_internet_time():
 # change the mode restart in web AP mode
 def on_dbl_click(*args):
     # mode = 2
-    mode = config.get_config_variable(key="mode")
+    mode = config.DATA["mode"]
     mode = 2 if(mode == 0) else 0
     config.update_config_variable(key="mode", value=mode)
     machine.reset()
@@ -52,16 +52,19 @@ def on_long_press(*args):
     machine.reset()
 
 async def my_app():
-    await asyncio.sleep(1)
+    await asyncio.sleep(0)
+    import mem_test
     while 1:
-        await asyncio.sleep(1)
+        print( mem_test.free(1) )
+        gc.collect()
+        await asyncio.sleep(10)
 
 
 def init_reset_func():
     from machine import Pin
     from debounce import Pushbutton, Switch
     ip = Pin(RESET_BUTTON, Pin.IN, Pin.PULL_UP)
-    ip_type = config.get_config_variable("input_type")
+    ip_type = config.DATA["input_type"]
     print("ip type", ip_type)
     if( ip_type == "pushbutton" ):
         rs = Pushbutton(ip)
@@ -87,9 +90,9 @@ def init_reset_func():
                     ip_pin = ip_pin.split(",")
                 op_pin = p["pin_output"]
                 op_pin = op_pin.split(",")
-                pre_val = config.get_config_variable("{}".format(id_prop))
+                pre_val = config.get_property_value("{}".format(id_prop))
                 pre_val = 0 if(pre_val == None) else pre_val
-                config.update_config_variable(key=id_prop+"_time", value=time.time())
+                config.update_property_value(id_prop+"_time", time.time())
                 config.PROP_TYPE[id_prop] = type_prop
                 print("prevel: {}".format(pre_val))
                 if type_prop == SMAC_PROPERTY["FAN"]:
@@ -124,7 +127,7 @@ async def start_smac_client():
     await t2
 
 # run functions
-MODE = config.MODE
+MODE = config.DATA["mode"]
 print("MODE", MODE)
 init_reset_func()
 #MODE = 2
