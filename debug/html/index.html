@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1.0, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+        body {
+          font-family: Helvetica;
+          background-color: #e0e0e0;
+        }
+
+        .C_main {
+            width: 100%;
+        }
+
+        @media only screen and (min-width: 600px) {
+          .C_main {
+               margin: auto;
+               width: 60%;
+               /*background-color: coral;*/
+          }
+        }
+
+        input[type=text] {
+          width: 50%;
+          padding: 12px 20px;
+          margin: 8px 0;
+          box-sizing: border-box;
+          font-size: 15px;
+        }
+
+         input[type=button] {
+          padding: 12px 20px;
+          margin: 8px 0;
+          box-sizing: border-box;
+          font-size: 15px;
+        }
+
+        .C_header {
+            height: 50px;
+            font-size: 20px;
+            text-align: center;
+        }
+
+        .C_block {
+            width: 100%;
+        }
+
+        .C_title {
+            width: 100%;
+            padding: 12px;
+            background-color: #b0b0b0;
+            font-size: 15px;
+        }
+
+        #id_loader {
+
+        }
+
+        .C_info_wrapper {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            background-color: rgba(0,0,0, 0.5);;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            display: none;
+        }
+
+        #id_info, #id_loader {
+            position: absolute;
+            width: 100px;
+            height: 40px;
+            padding: 50px 50px;
+            background-color: white;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 2px 2px 10px 5px #888888;
+            border-radius: 5px;
+            text-align: center;
+
+        }
+
+
+    </style>
+</head>
+<body>
+
+
+<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> -->
+<div class="C_info_wrapper" id="id_loader_wrapper">
+    <div id="id_loader" style=""> Loading... </div>
+</div>
+
+<div class="C_info_wrapper" id="id_info_wrapper">
+    <div id="id_info"> This is info </div>
+</div>
+<div class="C_main">
+    <div class="C_header">
+        Device Config
+    </div>
+
+    <div class="C_block">
+        <div  class="C_title"> Version: <span id="id_version"> </span> </div>
+    </div> <br> <br>
+
+    <div class="C_block">
+        <div  class="C_title"> Device ID: <span id="id_device"> </span> </div>
+    </div> <br> <br>
+
+    
+    <div class="C_block C_prop_container">
+        <div class="C_title"> Properties </div> <br>
+        <div id="id_props">
+        </div>
+    </div>
+
+    <div class="C_block">
+        <div  class="C_title"> Select Input Type</div>
+        <div>
+            <input type="radio" name="sel_input" value="switch" id="id_ip_sel_switch"> Switch <br>
+            <input type="radio" name="sel_input" value="pushbutton" id="id_ip_sel_pushbtn"> Push Button <br>
+            <input type="button" value="update"  id="id_select_input_type">
+        </div>
+    </div> <br> <br>
+
+    <div class="C_block">
+        <div  class="C_title"> Blocked Topics </div>
+        <div id="id_blocked_topic_container">
+            <!-- <input type="checkbox" name="sel_blocked_device" value="switch" > Switch <br>
+            <input type="checkbox" name="sel_blocked_device" value="pushbutton" > Push Button <br> -->
+
+        </div>
+        <input type="button" value="remove"  id="id_remove_blocked_topic">
+    </div> <br> <br>
+
+    <div class="C_block">
+        <div id="id_conn1" class="C_title"> Connection: 1 </div> <br>
+        <input type="text" placeholder="wifi_ssid" id="id_wifi_ssid_1"> <br>
+        <input type="text" placeholder="wifi_password" id="id_wifi_password_1"> <br>
+        <input type="button" value="update"  id="id_wifi_submit_1">
+    </div> <br>
+
+    <!-- <div class="C_block">
+        <div id="id_conn2" class="C_title"> Connection: 2 </div> <br>
+        <input type="text" placeholder="wifi_ssid" id="id_wifi_ssid_2"> <br>
+        <input type="text" placeholder="wifi_password" id="id_wifi_password_2"> <br>
+        <input type="button" value="update"  id="id_wifi_submit_2">
+    </div> <br> -->
+
+
+    <div class="C_block">
+        <div id="" class="C_title"> Access Point </div> <br>
+        <input type="text" placeholder="AP ssid" id="id_ap_ssid"> <br>
+        <input type="text" placeholder="AP password" id="id_ap_password"> <br>
+        <input type="button" value="update"  id="id_ap_submit">
+    </div> <br>
+
+    <div class="C_block">
+        <div id="id_pin_device_wrapper" class="C_title"> PIN Device </div> <br>
+        <input type="text" placeholder="PIN" id="id_text_pin_device"> <br>
+        <input type="button" value="update"  id="id_update_pin_device">
+    </div> <br>
+
+    <div class="C_block">
+        <div id="id_name_device_wrapper" class="C_title"> Name Device </div> <br>
+        <input type="text" placeholder="Device Name" id="id_text_name_device"> <br>
+        <input type="button" value="update"  id="id_update_name_device">
+    </div> <br>
+
+    <div class="C_topic_wrapper C_block"  style="">
+        <div class="C_title" > Subscribed Homes </div> <br>
+        <div id="id_topics" >
+        </div>
+        <input type="button" value="remove selected home"  id="id_remove_topic">
+    </div> <br>
+
+
+    <div class="C_version_wrapper C_block"  style="">
+        <div class="C_title"> Updates and Downloads </div> <br>
+        <input type="button" value="check and download updates"  id="id_check_for_update"> <br>
+        <!-- <input type="button" value="download and install"  id="id_download_update" style="display:none;"> -->
+        <!-- <input type="button" value="download and install"  id="id_download_update" style="display: none;"> -->
+    </div><br>
+
+    <div class="C_version_wrapper C_block"  style="">
+        <div class="C_title"> Factory Settings </div> <br>
+        <input type="button" value="Reset to Default Version"  id="id_reset_device"> <br>
+    </div><br>
+
+    <div class="C_block">
+        <!-- <input type="checkbox" id="id_set_mode"> Restart in Same Mode -->
+        <input type="button" value="save and restart"  id="id_restart">
+    <div> <br>
+
+    <!-- <div class="C_block">
+        <input type="button" value="restart in WebREPL mode"  id="id_restart_webrepl">
+    <div> <br> -->
+
+</div>
+
+<script type="text/javascript" src="common.js"></script>
+<script type="text/javascript" src="scripts.js"></script>
+<!-- <script type="text/javascript" src="scripts2.js"></script> -->
+<script>
+    
+</script>
+</div>
+</html>

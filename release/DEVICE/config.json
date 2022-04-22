@@ -1,0 +1,17 @@
+{
+    "mode": 0,
+    "wifi_config_1": {
+        "ssid": "Realme",
+        "password": "nopassword"
+    },
+    "ap_config": {
+        "ssid": "SMAC_DEV",
+        "password": "password"
+    },
+    "name_device": "smac_D2",
+    "pin_device": "1234",
+    "sub_topic": [ ["T3", "H1", "G2"] ],
+    "interval_online": 20,
+    "blocked_topic": ["T1", "T2"],
+    "input_type": "switch",
+}
